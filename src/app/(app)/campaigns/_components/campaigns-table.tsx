@@ -31,7 +31,7 @@ import type { CampaignRow, CampaignStatus } from "@/lib/domain/types";
 import { formatMetricValue, MISSING } from "@/lib/format";
 import { METRICS, type MetricKey } from "@/lib/metrics/definitions";
 import { aggregateComponents, deriveMetrics } from "@/lib/metrics/derive";
-import { resultLabel } from "@/lib/metrics/result-types";
+import { resultLabel, resultNames } from "@/lib/metrics/result-types";
 import { cn } from "@/lib/utils";
 
 const features = tableFeatures({
@@ -158,7 +158,7 @@ export function CampaignsTable({
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <InputGroup className="sm:max-w-xs">
+        <InputGroup className="h-11 sm:max-w-xs lg:h-9">
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
@@ -172,9 +172,12 @@ export function CampaignsTable({
         </InputGroup>
         <SegmentedControl
           aria-label="Filtrar por status"
+          size="lg"
+          fill
           value={status}
           onChange={setStatus}
           options={STATUS_FILTERS}
+          className="sm:w-auto"
         />
       </div>
 
@@ -185,101 +188,132 @@ export function CampaignsTable({
           description="Ajuste a busca ou o filtro de status."
         />
       ) : (
-        <Card className="py-0">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((group) => (
-                <TableRow key={group.id}>
-                  {group.headers.map((header, i) => {
-                    const sorted = header.column.getIsSorted();
-                    const numeric = i > 1;
-                    return (
-                      <TableHead
-                        key={header.id}
-                        aria-sort={
-                          sorted === "asc"
-                            ? "ascending"
-                            : sorted === "desc"
-                              ? "descending"
-                              : undefined
-                        }
+        <>
+          {/* Phones/tablets: cards with at most 3 pieces of information. */}
+          <ul className="divide-y divide-linha rounded-xl border border-linha bg-superficie lg:hidden">
+            {table.getRowModel().rows.map((row) => {
+              const c = row.original;
+              const names = resultNames(c.resultIndicator);
+              return (
+                <li key={c.id} className="space-y-1 px-4 py-3">
+                  <p className="truncate text-sm font-semibold text-texto">{c.name}</p>
+                  <p className="flex items-baseline justify-between gap-3 text-[13px] text-texto-apagado figures-tabular">
+                    <span>
+                      {c.resultIndicator ? (
+                        <>
+                          <strong className="font-semibold text-texto">
+                            {formatMetricValue(c.metrics.costPerResult, "currency", { currency })}
+                          </strong>{" "}
+                          por {names.singular}
+                        </>
+                      ) : (
+                        "Sem resultado definido"
+                      )}
+                    </span>
+                    <span>
+                      {formatMetricValue(c.metrics.spend, "currency", { currency })} investidos
+                    </span>
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+          <Card className="hidden py-0 lg:flex">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((group) => (
+                  <TableRow key={group.id}>
+                    {group.headers.map((header, i) => {
+                      const sorted = header.column.getIsSorted();
+                      const numeric = i > 1;
+                      return (
+                        <TableHead
+                          key={header.id}
+                          aria-sort={
+                            sorted === "asc"
+                              ? "ascending"
+                              : sorted === "desc"
+                                ? "descending"
+                                : undefined
+                          }
+                          className={cn(
+                            numeric && "text-right",
+                            i === 0 && "pl-5",
+                            i === group.headers.length - 1 && "pr-5",
+                          )}
+                        >
+                          {header.column.getCanSort() ? (
+                            <button
+                              type="button"
+                              onClick={header.column.getToggleSortingHandler()}
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-md transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none",
+                                numeric && "flex-row-reverse",
+                                sorted && "text-foreground",
+                              )}
+                            >
+                              <table.FlexRender header={header} />
+                              {sorted === "asc" ? (
+                                <ArrowUpIcon className="size-3.5" aria-hidden />
+                              ) : sorted === "desc" ? (
+                                <ArrowDownIcon className="size-3.5" aria-hidden />
+                              ) : (
+                                <ArrowUpDownIcon className="size-3.5 opacity-40" aria-hidden />
+                              )}
+                            </button>
+                          ) : (
+                            <table.FlexRender header={header} />
+                          )}
+                        </TableHead>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody className="figures-tabular">
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getAllCells().map((cell, i, all) => (
+                      <TableCell
+                        key={cell.id}
                         className={cn(
-                          numeric && "text-right",
+                          i > 1 && "text-right",
                           i === 0 && "pl-5",
-                          i === group.headers.length - 1 && "pr-5",
+                          i === all.length - 1 && "pr-5",
                         )}
                       >
-                        {header.column.getCanSort() ? (
-                          <button
-                            type="button"
-                            onClick={header.column.getToggleSortingHandler()}
-                            className={cn(
-                              "inline-flex items-center gap-1 rounded-md transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:outline-none",
-                              numeric && "flex-row-reverse",
-                              sorted && "text-foreground",
-                            )}
-                          >
-                            <table.FlexRender header={header} />
-                            {sorted === "asc" ? (
-                              <ArrowUpIcon className="size-3.5" aria-hidden />
-                            ) : sorted === "desc" ? (
-                              <ArrowDownIcon className="size-3.5" aria-hidden />
-                            ) : (
-                              <ArrowUpDownIcon className="size-3.5 opacity-40" aria-hidden />
-                            )}
-                          </button>
-                        ) : (
-                          <table.FlexRender header={header} />
-                        )}
-                      </TableHead>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody className="figures-tabular">
-              {table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getAllCells().map((cell, i, all) => (
+                        <table.FlexRender cell={cell} />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+              <TableFooter className="figures-tabular">
+                <TableRow>
+                  <TableCell className="pl-5 font-medium">
+                    Total · {visible.length} {visible.length === 1 ? "campanha" : "campanhas"}
+                  </TableCell>
+                  <TableCell />
+                  {NUMERIC.map((m, i) => (
                     <TableCell
-                      key={cell.id}
-                      className={cn(
-                        i > 1 && "text-right",
-                        i === 0 && "pl-5",
-                        i === all.length - 1 && "pr-5",
-                      )}
+                      key={m}
+                      className={cn("text-right font-medium", i === NUMERIC.length - 1 && "pr-5")}
+                      title={
+                        (m === "results" || m === "costPerResult") && totals.mixedResultTypes
+                          ? "Tipos de resultado diferentes não são somados"
+                          : undefined
+                      }
                     >
-                      <table.FlexRender cell={cell} />
+                      {(m === "results" || m === "costPerResult") && totals.mixedResultTypes
+                        ? MISSING
+                        : formatMetricValue(totals[m], METRICS[m].format, { currency })}
                     </TableCell>
                   ))}
                 </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter className="figures-tabular">
-              <TableRow>
-                <TableCell className="pl-5 font-medium">
-                  Total · {visible.length} {visible.length === 1 ? "campanha" : "campanhas"}
-                </TableCell>
-                <TableCell />
-                {NUMERIC.map((m, i) => (
-                  <TableCell
-                    key={m}
-                    className={cn("text-right font-medium", i === NUMERIC.length - 1 && "pr-5")}
-                    title={
-                      (m === "results" || m === "costPerResult") && totals.mixedResultTypes
-                        ? "Tipos de resultado diferentes não são somados"
-                        : undefined
-                    }
-                  >
-                    {(m === "results" || m === "costPerResult") && totals.mixedResultTypes
-                      ? MISSING
-                      : formatMetricValue(totals[m], METRICS[m].format, { currency })}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </Card>
+              </TableFooter>
+            </Table>
+          </Card>
+        </>
       )}
       {totals.mixedResultTypes && visible.length > 0 ? (
         <p className="text-xs text-muted-foreground">

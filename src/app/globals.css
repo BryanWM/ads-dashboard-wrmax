@@ -196,10 +196,13 @@
   @apply tabular-nums;
 }
 
-/* Section label: JetBrains Mono 11px, caps, 0.16em ("ETAPA 2", "COMERCIAL"). */
+/*
+ * Section label: JetBrains Mono, caps, 0.16em ("ETAPA 2", "COMERCIAL").
+ * 12px instead of the DS's 11px: the client dashboard requires labels ≥ 12px.
+ */
 @utility etiqueta {
   font-family: var(--font-jetbrains);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.4;
   font-weight: 400;
   letter-spacing: 0.16em;

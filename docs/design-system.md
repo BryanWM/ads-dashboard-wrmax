@@ -60,6 +60,38 @@ O dourado da marca é cor de **acento**, não de paleta categórica. Validação
 - Gráficos com 3+ séries: `--chart-2…8` = ordem categórica escura validada da skill
   `dataviz`, com rótulos diretos ou tabela.
 
+## Visão geral do cliente (mobile-first)
+
+Público: leigo, no celular, muitas vezes via WhatsApp. Pergunta única: _"meu investimento
+está dando resultado?"_. Código em `src/app/(app)/dashboard/_components/overview/` e a
+lógica de apresentação (pura, testada) em `src/lib/overview/`.
+
+**Hierarquia**: cabeçalho fixo (cliente, "Atualizado em…", chips 7 dias · 30 dias · Mês
+atual) → frase-resumo por template → 4 números em 2×2 → abas Funil · Anúncios · Detalhes.
+No desktop (≥ 1024 px) vira grade bento com gráfico principal, funil e campeões sem rolar.
+
+**Regras**
+
+- **Resultado principal** = objetivo declarado do cliente (`objective`); sem ele, o tipo de
+  resultado com maior investimento. Investimento, resultados e custo desse cartão contam
+  só campanhas desse tipo — objetivos diferentes nunca são somados.
+- **4º cartão**: Retorno (ROAS) só com valor de compra rastreado; senão Pessoas alcançadas.
+- **Cor da variação** segue a polaridade (custo subindo = vermelho; investimento é neutro).
+- Tocar num cartão abre a **gaveta** (inferior no celular, lateral no desktop) com
+  explicação em uma frase, gráfico diário e métricas técnicas. Sem tooltips de hover.
+- Formatação: no máximo 1 casa em percentuais e decimais, nenhuma em contagens; valores
+  ≥ R$ 10 mil abreviados nos cartões ("R$ 31,1 mil"), completos na gaveta.
+- Celular: primeira tela (390×844) mostra cabeçalho, frase e 4 números; página ≤ 2 telas;
+  sem rolagem horizontal (só dentro do carrossel); toque ≥ 44 px; textos ≥ 12 px (por isso
+  a `etiqueta` usa 12 px, e não os 11 px do DS). Tabelas viram lista de cartões.
+- Funil: "Viram" como número de destaque; barras a partir de "Clicaram" (100%), lineares.
+
+**Premissas a validar com a agência** (`src/lib/overview/signals.ts`)
+
+- Selo de saúde: custo ≤ meta = Saudável; até 20% acima = Atenção; acima disso = Crítico.
+- Frequência alta: média acima de **3,5** visualizações por pessoa no período.
+- Frase: variação abaixo de 1% é descrita como "estável".
+
 ## Movimento (WRMax DS · Animações)
 
 Biblioteca: **`motion`** (`motion/react`), presets em `src/components/motion/presets.ts`.

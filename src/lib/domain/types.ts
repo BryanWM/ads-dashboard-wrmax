@@ -8,6 +8,9 @@ import type { DailyComponents, DerivedMetrics, ResultTypeBreakdown } from "@/lib
 /** Where the numbers come from. Anything but "meta" must show the simulated badge. */
 export type DataOrigin = "simulated" | "meta";
 
+/** What the client's ads are for; decides the "main result" shown first. */
+export type ClientObjective = "purchases" | "messages" | "leads";
+
 export interface ClientSummary {
   id: string;
   name: string;
@@ -16,6 +19,10 @@ export interface ClientSummary {
   /** IANA timezone of the client's ad accounts. */
   timezone: string;
   adAccountCount: number;
+  /** Declared by the agency. null → the result type with most spend is used. */
+  objective: ClientObjective | null;
+  /** Target cost per main result (account currency). null → no health badge. */
+  costPerResultGoal: number | null;
 }
 
 export type SyncHealth = "ok" | "stale" | "failing" | "never";
@@ -30,12 +37,36 @@ export interface SyncStatus {
   lastError: string | null;
 }
 
+/** Spend and results of one result type on one day. */
+export interface TypedDay {
+  spend: number | null;
+  results: number | null;
+  purchaseValue: number | null;
+}
+
 export interface DailyPoint {
   date: string;
   /** null when the platform returned no row for that day. */
   current: DailyComponents | null;
   /** Same day-offset in the previous period. */
   previous: DailyComponents | null;
+  /** Current day per result indicator, so one objective can be charted alone. */
+  currentByType: Record<string, TypedDay>;
+  /** Same day-offset in the previous period, per result indicator. */
+  previousByType: Record<string, TypedDay>;
+}
+
+/** One ad (creative). Only present when ad-level data is synced. */
+export interface AdView {
+  id: string;
+  name: string;
+  campaignName: string;
+  /** Creative preview (Meta `thumbnail_url`); null when unavailable. */
+  thumbnailUrl: string | null;
+  resultIndicator: string | null;
+  spend: number | null;
+  results: number | null;
+  costPerResult: number | null;
 }
 
 export interface MetricsSnapshot {
@@ -60,6 +91,8 @@ export interface DashboardData {
   daily: DailyPoint[];
   /** False for custom ranges: deduplicated reach exists only for preset periods. */
   reachAvailable: boolean;
+  /** Ads of the period. null = no ad-level data (not "no ads"). */
+  ads: AdView[] | null;
   sync: SyncStatus;
 }
 

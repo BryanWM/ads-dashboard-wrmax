@@ -44,15 +44,19 @@ export function formatMetricValue(
       }).format(value);
     case "integer":
       return numberFormat({ notation, maximumFractionDigits: compact ? 1 : 0 }).format(value);
+    // Brief: at most one decimal place in rates and percentages.
     case "decimal":
-      return numberFormat({ minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+      return numberFormat({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
     case "percent":
-      // Values are already in percent units (1.82 → "1,82%").
+      // Values are already in percent units (1.82 → "1,8%").
       return numberFormat({
         style: "percent",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
       }).format(value / 100);
+    case "multiplier":
+      // ROAS: 4.237 → "4,2x"
+      return `${numberFormat({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value)}x`;
   }
 }
 

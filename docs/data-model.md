@@ -144,6 +144,20 @@ A Meta deduplica o alcance **dentro do intervalo consultado**. Portanto:
 Campanhas com tipos de resultado diferentes (ex.: compras vs. leads) **não** têm seus
 resultados somados num único número; a UI agrupa por tipo.
 
+## Campos adicionados para a visão do cliente (contrato da Fase 6)
+
+Opcionais e aditivos — ausentes significam "sem dado", nunca zero:
+
+| Onde                            | Campo                                                                | Origem na Meta                                                  |
+| ------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `*_metrics_daily`               | `purchase_value`                                                     | `action_values` (compras)                                       |
+| `*_metrics_daily`               | `add_to_cart`, `initiate_checkout`                                   | `actions` (`add_to_cart`, `initiate_checkout`)                  |
+| `clients`                       | `objective` (`purchases`/`messages`/`leads`), `cost_per_result_goal` | cadastro da agência                                             |
+| nova `ad_metrics_daily` + `ads` | métricas por anúncio, `thumbnail_url`                                | Insights `level=ad` + `/{ad_id}?fields=creative{thumbnail_url}` |
+
+ROAS = `Σ purchase_value ÷ Σ spend` (mesma definição do `purchase_roas` da Meta). Hoje esses
+campos só existem no cliente de demonstração "Pizzaria Demonstração".
+
 ## Comparação com o período anterior
 
 - O período anterior equivalente tem o **mesmo número de dias**, imediatamente antes

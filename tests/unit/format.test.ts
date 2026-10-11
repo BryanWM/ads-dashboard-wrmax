@@ -29,10 +29,17 @@ describe("formatMetricValue", () => {
     expect(() => formatMetricValue(1, "currency")).toThrow();
   });
 
-  it("formats integers, decimals and percents in pt-BR", () => {
+  it("formats integers, decimals and percents in pt-BR with at most one decimal", () => {
     expect(formatMetricValue(1284, "integer")).toBe("1.284");
-    expect(formatMetricValue(2.5, "decimal")).toBe("2,50");
-    expect(normalize(formatMetricValue(1.8181, "percent"))).toBe("1,82%");
+    expect(formatMetricValue(1284.6, "integer")).toBe("1.285");
+    expect(formatMetricValue(2.5, "decimal")).toBe("2,5");
+    expect(normalize(formatMetricValue(1.8181, "percent"))).toBe("1,8%");
+    expect(normalize(formatMetricValue(12.34, "percent"))).toBe("12,3%");
+  });
+
+  it("formats return on ad spend as a multiplier", () => {
+    expect(formatMetricValue(4.237, "multiplier")).toBe("4,2x");
+    expect(formatMetricValue(null, "multiplier")).toBe(MISSING);
   });
 
   it("abbreviates when compact", () => {

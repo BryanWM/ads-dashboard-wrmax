@@ -45,7 +45,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <TopbarLoader />
           </Suspense>
           <PendingContent>
-            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
+            {/*
+              overflow-x: clip (not hidden) crops transient overflow from entrance
+              animations without creating a scroll container, so sticky headers keep working.
+            */}
+            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-x-clip px-4 py-6 sm:px-6 lg:px-8">
               {children}
             </div>
           </PendingContent>

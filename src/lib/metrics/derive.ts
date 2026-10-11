@@ -11,6 +11,13 @@ export interface DailyComponents {
   results: number | null;
   /** e.g. "actions:offsite_conversion.fb_pixel_purchase"; null when the campaign has no result type. */
   resultIndicator: string | null;
+  /**
+   * Online-sales components (Meta `action_values` / purchase funnel actions).
+   * Optional: absent for accounts without a tracked store — never read as zero.
+   */
+  purchaseValue?: number | null;
+  addToCart?: number | null;
+  initiateCheckout?: number | null;
 }
 
 export interface AggregatedComponents {
@@ -18,6 +25,9 @@ export interface AggregatedComponents {
   impressions: number | null;
   linkClicks: number | null;
   results: number | null;
+  purchaseValue: number | null;
+  addToCart: number | null;
+  initiateCheckout: number | null;
   /** The single result type of the period, or null if none/mixed. */
   resultIndicator: string | null;
   /** True when rows carry different result types, so results cannot be summed. */
@@ -36,11 +46,11 @@ export type DerivedMetrics = Record<MetricKey, number | null> & {
   resultIndicator: string | null;
 };
 
-/** Sum that keeps "no data" distinct from zero: null only if every value is null. */
-export function sumNullable(values: Iterable<number | null>): number | null {
+/** Sum that keeps "no data" distinct from zero: null only if every value is null/absent. */
+export function sumNullable(values: Iterable<number | null | undefined>): number | null {
   let total: number | null = null;
   for (const v of values) {
-    if (v === null || !Number.isFinite(v)) continue;
+    if (v === null || v === undefined || !Number.isFinite(v)) continue;
     total = (total ?? 0) + v;
   }
   return total;
@@ -68,6 +78,9 @@ export function aggregateComponents(rows: readonly DailyComponents[]): Aggregate
     impressions: sumNullable(rows.map((r) => r.impressions)),
     linkClicks: sumNullable(rows.map((r) => r.linkClicks)),
     results: mixedResultTypes ? null : sumNullable(rows.map((r) => r.results)),
+    purchaseValue: sumNullable(rows.map((r) => r.purchaseValue)),
+    addToCart: sumNullable(rows.map((r) => r.addToCart)),
+    initiateCheckout: sumNullable(rows.map((r) => r.initiateCheckout)),
     resultIndicator: indicators.size === 1 ? [...indicators][0]! : null,
     mixedResultTypes,
     rowCount: rows.length,
@@ -80,6 +93,12 @@ export interface ResultTypeBreakdown {
   /** Spend of the rows that carry this result type only. */
   spend: number | null;
   costPerResult: number | null;
+  /** Delivery of the same rows, so a funnel can be scoped to one objective. */
+  impressions: number | null;
+  linkClicks: number | null;
+  purchaseValue: number | null;
+  addToCart: number | null;
+  initiateCheckout: number | null;
 }
 
 /**
@@ -99,7 +118,17 @@ export function aggregateByResultType(rows: readonly DailyComponents[]): ResultT
     .map(([resultIndicator, group]) => {
       const spend = sumNullable(group.map((r) => r.spend));
       const results = sumNullable(group.map((r) => r.results));
-      return { resultIndicator, spend, results, costPerResult: safeRatio(spend, results) };
+      return {
+        resultIndicator,
+        spend,
+        results,
+        costPerResult: safeRatio(spend, results),
+        impressions: sumNullable(group.map((r) => r.impressions)),
+        linkClicks: sumNullable(group.map((r) => r.linkClicks)),
+        purchaseValue: sumNullable(group.map((r) => r.purchaseValue)),
+        addToCart: sumNullable(group.map((r) => r.addToCart)),
+        initiateCheckout: sumNullable(group.map((r) => r.initiateCheckout)),
+      };
     })
     .sort((a, b) => (b.spend ?? 0) - (a.spend ?? 0));
 }
@@ -128,6 +157,8 @@ export function deriveMetrics(
     linkCpc: safeRatio(totals.spend, totals.linkClicks),
     cpm: safeRatio(totals.spend, totals.impressions, 1000),
     costPerResult: totals.mixedResultTypes ? null : safeRatio(totals.spend, totals.results),
+    // Meta's purchase ROAS: tracked purchase value ÷ spend. Null without a tracked store.
+    roas: safeRatio(totals.purchaseValue, totals.spend),
     mixedResultTypes: totals.mixedResultTypes,
     resultIndicator: totals.resultIndicator,
   };

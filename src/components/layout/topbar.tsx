@@ -34,7 +34,8 @@ interface TopbarProps {
 export function Topbar({ simulated, clientView }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-linha surface-glass px-3 sm:px-4 md:rounded-t-2xl">
-      <SidebarTrigger className="-ml-1" />
+      {/* 44px touch target on phones (WCAG / brief), compact on desktop. */}
+      <SidebarTrigger className="-ml-2 size-11 md:-ml-1 md:size-8" />
       <Separator orientation="vertical" className="mr-1 h-4 bg-linha" />
       <div className="min-w-0 flex-1">
         <SectionTitle clientView={clientView} />

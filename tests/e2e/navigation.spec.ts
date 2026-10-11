@@ -16,7 +16,7 @@ test.describe("navigation", () => {
     if (isMobile) {
       await page.getByRole("button", { name: "Mostrar ou ocultar menu" }).click();
     }
-    await page.getByRole("button", { name: /Auto Center Modelo/ }).click();
+    await page.getByRole("button", { name: /Pizzaria Demonstração/ }).click();
     await page.getByRole("menuitem", { name: /Clínica Exemplo/ }).click();
     await expect(page).toHaveURL(/client=demo-clinica/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Clínica Exemplo");

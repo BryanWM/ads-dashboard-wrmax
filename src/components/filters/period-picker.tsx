@@ -72,7 +72,9 @@ export function PeriodPicker({ preset, range, today }: PeriodPickerProps) {
       }}
     >
       <PopoverTrigger
-        render={<Button variant="outline" aria-label={`Período: ${label}`} />}
+        render={
+          <Button variant="outline" className="h-11 lg:h-9" aria-label={`Período: ${label}`} />
+        }
         data-pending={isPending || undefined}
       >
         <CalendarIcon data-icon="inline-start" />

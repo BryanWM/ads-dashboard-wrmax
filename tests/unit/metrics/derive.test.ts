@@ -132,10 +132,33 @@ describe("aggregateByResultType", () => {
       row({ spend: 999, impressions: 10 }), // no result type: excluded
     ]);
 
-    expect(groups).toEqual([
+    expect(groups).toMatchObject([
       { resultIndicator: PURCHASE, spend: 120, results: 5, costPerResult: 24 },
       { resultIndicator: LEAD, spend: 50, results: 10, costPerResult: 5 },
     ]);
+  });
+});
+
+describe("online sales components", () => {
+  it("derives ROAS from tracked purchase value and keeps it missing otherwise", () => {
+    const sales = deriveMetrics(
+      aggregateComponents([
+        row({ spend: 100, results: 4, resultIndicator: PURCHASE, purchaseValue: 420 }),
+        row({ spend: 50, results: 2, resultIndicator: PURCHASE, purchaseValue: 180 }),
+      ]),
+    );
+    expect(sales.roas).toBe(4);
+
+    const leads = deriveMetrics(aggregateComponents([row({ spend: 100, results: 4 })]));
+    expect(leads.roas).toBeNull();
+  });
+
+  it("scopes funnel steps to each result type", () => {
+    const [purchases] = aggregateByResultType([
+      row({ spend: 10, results: 1, resultIndicator: PURCHASE, linkClicks: 40, addToCart: 6 }),
+      row({ spend: 10, results: 9, resultIndicator: LEAD, linkClicks: 90 }),
+    ]);
+    expect(purchases).toMatchObject({ linkClicks: 40, addToCart: 6 });
   });
 });
 

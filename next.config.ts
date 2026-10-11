@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
@@ -11,6 +10,12 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  // Entry point. A page calling redirect() during prerender breaks the `instant`
+  // validation of Next 16.4; a config redirect never renders anything.
+  // Phase 5: authenticated users go straight to /dashboard (proxy).
+  async redirects() {
+    return [{ source: "/", destination: "/login", permanent: false }];
   },
 };
 

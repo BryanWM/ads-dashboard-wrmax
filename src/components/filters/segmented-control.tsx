@@ -13,9 +13,14 @@ export interface SegmentOption<T extends string> {
 
 interface SegmentedControlProps<T extends string> {
   options: readonly SegmentOption<T>[];
-  value: T;
+  /** null = no option active (e.g. a custom period chosen elsewhere). */
+  value: T | null;
   onChange: (value: T) => void;
   "aria-label": string;
+  /** "lg" = 44px targets (touch-first screens). */
+  size?: "md" | "lg";
+  /** Stretch options to equal widths across the container. */
+  fill?: boolean;
   className?: string;
 }
 
@@ -32,6 +37,8 @@ export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  size = "md",
+  fill = false,
   className,
   ...aria
 }: SegmentedControlProps<T>) {
@@ -42,7 +49,8 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={aria["aria-label"]}
       className={cn(
-        "relative inline-flex max-w-full flex-wrap items-center gap-0.5 rounded-lg border border-linha bg-[rgba(10,9,7,0.6)] p-1",
+        "relative max-w-full items-center gap-0.5 rounded-lg border border-linha bg-[rgba(10,9,7,0.6)] p-1",
+        fill ? "flex w-full" : "inline-flex flex-wrap",
         className,
       )}
     >
@@ -55,7 +63,9 @@ export function SegmentedControl<T extends string>({
             aria-pressed={active}
             onClick={() => !active && onChange(option.value)}
             className={cn(
-              "relative h-8 rounded-chip px-3 text-[13px] font-semibold whitespace-nowrap text-texto-inativo transition-colors duration-[450ms] outline-none hover:text-texto-apagado focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-dourado",
+              "relative rounded-chip px-3 font-semibold whitespace-nowrap text-texto-inativo transition-colors duration-[450ms] outline-none hover:text-texto-apagado focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-dourado",
+              size === "lg" ? "h-11 text-sm" : "h-8 text-[13px]",
+              fill && "min-w-0 flex-1 px-2",
               active && "text-texto hover:text-texto",
             )}
           >

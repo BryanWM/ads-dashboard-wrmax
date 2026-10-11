@@ -2,7 +2,7 @@
  * Static catalogue of the SIMULATED organisation. All names, ids and e-mails are
  * fictitious (example.com, act_0000…) so they can never be mistaken for real data.
  */
-import type { CampaignStatus } from "@/lib/domain/types";
+import type { CampaignStatus, ClientObjective } from "@/lib/domain/types";
 
 export const SIM_ORG_NAME = "Agência Demonstração";
 export const SIM_TIMEZONE = "America/Sao_Paulo";
@@ -25,6 +25,19 @@ export interface SimCampaign {
   /** Paused campaigns stop producing rows this many days ago. */
   pausedDaysAgo?: number;
   status: CampaignStatus;
+  /** Average order value (sales campaigns only). */
+  averageTicket?: number;
+  /** Ad-level demo data. Each ad takes a share of the campaign's spend/results. */
+  ads?: SimAd[];
+}
+
+export interface SimAd {
+  id: string;
+  name: string;
+  /** Local demo artwork under /public/demo/ads (never a real creative). */
+  thumbnailUrl: string;
+  spendShare: number;
+  resultShare: number;
 }
 
 export interface SimAdAccount {
@@ -38,6 +51,8 @@ export interface SimClient {
   id: string;
   name: string;
   sync: SimSyncProfile;
+  objective: ClientObjective | null;
+  costPerResultGoal: number | null;
   accounts: SimAdAccount[];
 }
 
@@ -45,11 +60,14 @@ const LEAD = "actions:lead";
 const MESSAGES = "actions:onsite_conversion.messaging_conversation_started_7d";
 const PURCHASE = "actions:offsite_conversion.fb_pixel_purchase";
 
-export const SIM_CLIENTS: SimClient[] = [
+const SERVICE_CLIENTS: SimClient[] = [
   {
     id: "demo-auto-center",
     name: "Auto Center Modelo",
     sync: { kind: "ok" },
+    // No declared objective: the main result falls back to the type with most spend.
+    objective: null,
+    costPerResultGoal: 30,
     accounts: [
       {
         id: "acc-auto-1",
@@ -126,6 +144,8 @@ export const SIM_CLIENTS: SimClient[] = [
       daysSinceSuccess: 2,
       error: "Limite de requisições da Meta atingido. Nova tentativa agendada automaticamente.",
     },
+    objective: "messages",
+    costPerResultGoal: null,
     accounts: [
       {
         id: "acc-clin-1",
@@ -141,6 +161,7 @@ export const SIM_CLIENTS: SimClient[] = [
             baseSpend: 120,
             startedDaysAgo: 240,
             status: "active",
+            averageTicket: 260,
           },
           {
             id: "cmp-c2",
@@ -160,6 +181,114 @@ export const SIM_CLIENTS: SimClient[] = [
     id: "demo-imobiliaria",
     name: "Imobiliária Demonstração",
     sync: { kind: "never" },
+    objective: "leads",
+    costPerResultGoal: null,
     accounts: [],
   },
 ];
+
+/**
+ * Online-sales demo (pizzaria with delivery), authorised to showcase the sales
+ * layout: purchase value (ROAS), 5-step funnel and ad-level data. Every field
+ * here is what the Meta integration will fill in Phase 6.
+ */
+const PIZZARIA: SimClient = {
+  id: "demo-pizzaria",
+  name: "Pizzaria Demonstração",
+  sync: { kind: "ok" },
+  objective: "purchases",
+  costPerResultGoal: 24,
+  accounts: [
+    {
+      id: "acc-pizza-1",
+      externalId: "act_000000000005",
+      name: "Pizzaria Demonstração · Delivery",
+      campaigns: [
+        {
+          id: "cmp-p1",
+          name: "Vendas · Delivery noite",
+          objectiveLabel: "Vendas",
+          resultIndicator: PURCHASE,
+          seed: 71,
+          baseSpend: 95,
+          startedDaysAgo: 320,
+          status: "active",
+          averageTicket: 78,
+          ads: [
+            {
+              id: "ad-p1",
+              name: "Pizza saindo do forno",
+              thumbnailUrl: "/demo/ads/forno.svg",
+              spendShare: 0.45,
+              resultShare: 0.55,
+            },
+            {
+              id: "ad-p2",
+              name: "Promo terça em dobro",
+              thumbnailUrl: "/demo/ads/promo.svg",
+              spendShare: 0.35,
+              resultShare: 0.3,
+            },
+            {
+              id: "ad-p3",
+              name: "Depoimento de cliente",
+              thumbnailUrl: "/demo/ads/depoimento.svg",
+              spendShare: 0.2,
+              resultShare: 0.15,
+            },
+          ],
+        },
+        {
+          id: "cmp-p2",
+          name: "Vendas · Combo família fim de semana",
+          objectiveLabel: "Vendas",
+          resultIndicator: PURCHASE,
+          seed: 79,
+          baseSpend: 60,
+          startedDaysAgo: 200,
+          status: "active",
+          averageTicket: 112,
+          ads: [
+            {
+              id: "ad-p4",
+              name: "Combo família 2 pizzas",
+              thumbnailUrl: "/demo/ads/combo.svg",
+              spendShare: 0.6,
+              resultShare: 0.7,
+            },
+            {
+              id: "ad-p5",
+              name: "Bordas recheadas",
+              thumbnailUrl: "/demo/ads/borda.svg",
+              spendShare: 0.4,
+              resultShare: 0.3,
+            },
+          ],
+        },
+        {
+          id: "cmp-p3",
+          name: "Remarketing · Carrinho abandonado",
+          objectiveLabel: "Vendas",
+          resultIndicator: PURCHASE,
+          seed: 83,
+          baseSpend: 25,
+          startedDaysAgo: 150,
+          status: "active",
+          averageTicket: 70,
+          ads: [
+            {
+              id: "ad-p6",
+              name: "Esqueceu sua pizza?",
+              thumbnailUrl: "/demo/ads/carrinho.svg",
+              spendShare: 1,
+              resultShare: 1,
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
+// The sales demo comes first: it is the reference layout for the first real client.
+export const SIM_CLIENTS: SimClient[] = [PIZZARIA, ...SERVICE_CLIENTS];

@@ -32,7 +32,11 @@ interface SeriesOptions {
   baseSpend?: number;
   /** Result type the campaign optimises for; null = no result reported. */
   resultIndicator?: string | null;
+  /** Average order value for sales campaigns (enables the purchase funnel). */
+  averageTicket?: number;
 }
+
+const PURCHASE = "actions:offsite_conversion.fb_pixel_purchase";
 
 export function simulateDailySeries({
   from,
@@ -40,6 +44,7 @@ export function simulateDailySeries({
   seed = 7,
   baseSpend = 180,
   resultIndicator = "actions:lead",
+  averageTicket = 80,
 }: SeriesOptions): SimulatedDay[] {
   const rand = prng(seed);
   return Array.from({ length: days }, (_, i) => {
@@ -53,6 +58,26 @@ export function simulateDailySeries({
     const ctr = 0.009 + rand() * 0.008;
     const linkClicks = Math.round(impressions * ctr);
     const conversion = 0.035 + rand() * 0.03;
+
+    if (resultIndicator === PURCHASE) {
+      // Online store: view → click → cart → checkout → purchase, with order value.
+      const addToCart = Math.round(linkClicks * (0.14 + rand() * 0.08));
+      const initiateCheckout = Math.round(addToCart * (0.5 + rand() * 0.15));
+      const purchases = Math.round(initiateCheckout * (0.55 + rand() * 0.15));
+      return {
+        date,
+        spend,
+        impressions,
+        linkClicks,
+        results: purchases,
+        resultIndicator,
+        addToCart,
+        initiateCheckout,
+        purchaseValue: round2(purchases * averageTicket * (0.9 + rand() * 0.2)),
+        isSimulated: true as const,
+      };
+    }
+
     return {
       date,
       spend,

@@ -1,9 +1,12 @@
 /**
  * Canonical metric catalogue. Labels/descriptions are user-facing (pt-BR).
  * See docs/data-model.md → "Definições de métricas".
+ *
+ * `label` is the friendly name a non-specialist reads; `explanation` is one plain
+ * sentence for the details sheet; `description` is the technical definition.
  */
 
-export type MetricFormat = "currency" | "integer" | "decimal" | "percent";
+export type MetricFormat = "currency" | "integer" | "decimal" | "percent" | "multiplier";
 
 /** Which direction of change is good news for the advertiser. */
 export type MetricPolarity = "higher-is-better" | "lower-is-better" | "neutral";
@@ -11,6 +14,9 @@ export type MetricPolarity = "higher-is-better" | "lower-is-better" | "neutral";
 export interface MetricDefinition {
   key: MetricKey;
   label: string;
+  /** One plain sentence, no jargon (details sheet). */
+  explanation: string;
+  /** Technical definition / formula. */
   description: string;
   format: MetricFormat;
   polarity: MetricPolarity;
@@ -29,6 +35,7 @@ export const METRIC_KEYS = [
   "cpm",
   "results",
   "costPerResult",
+  "roas",
 ] as const;
 
 export type MetricKey = (typeof METRIC_KEYS)[number];
@@ -37,6 +44,7 @@ export const METRICS: Record<MetricKey, MetricDefinition> = {
   spend: {
     key: "spend",
     label: "Investimento",
+    explanation: "Quanto foi gasto com anúncios no período.",
     description: "Valor gasto no período, na moeda da conta de anúncios.",
     format: "currency",
     polarity: "neutral",
@@ -44,9 +52,10 @@ export const METRICS: Record<MetricKey, MetricDefinition> = {
   },
   reach: {
     key: "reach",
-    label: "Alcance",
+    label: "Pessoas alcançadas",
+    explanation: "Quantas pessoas diferentes viram seus anúncios pelo menos uma vez.",
     description:
-      "Pessoas únicas que viram os anúncios ao menos uma vez no período. Não é a soma do alcance diário: a mesma pessoa conta uma única vez.",
+      "Pessoas únicas no período (alcance). Não é a soma do alcance diário: a mesma pessoa conta uma única vez.",
     format: "integer",
     polarity: "higher-is-better",
     additive: false,
@@ -54,6 +63,7 @@ export const METRICS: Record<MetricKey, MetricDefinition> = {
   impressions: {
     key: "impressions",
     label: "Impressões",
+    explanation: "Quantas vezes os anúncios apareceram na tela das pessoas.",
     description: "Número de vezes que os anúncios foram exibidos.",
     format: "integer",
     polarity: "higher-is-better",
@@ -62,39 +72,44 @@ export const METRICS: Record<MetricKey, MetricDefinition> = {
   frequency: {
     key: "frequency",
     label: "Frequência",
-    description: "Média de vezes que cada pessoa alcançada viu os anúncios (impressões ÷ alcance).",
+    explanation: "Quantas vezes, em média, cada pessoa viu o anúncio.",
+    description: "Impressões ÷ pessoas alcançadas, no mesmo período.",
     format: "decimal",
     polarity: "neutral",
     additive: false,
   },
   linkClicks: {
     key: "linkClicks",
-    label: "Cliques no link",
-    description: "Cliques que levaram a destinos dentro ou fora da Meta indicados pelo anúncio.",
+    label: "Cliques",
+    explanation: "Quantas vezes as pessoas tocaram no anúncio para saber mais.",
+    description: "Cliques no link: levaram ao site, WhatsApp ou formulário indicado no anúncio.",
     format: "integer",
     polarity: "higher-is-better",
     additive: true,
   },
   linkCtr: {
     key: "linkCtr",
-    label: "CTR de link",
-    description: "Cliques no link ÷ impressões × 100.",
+    label: "Taxa de cliques",
+    explanation: "De cada 100 vezes que o anúncio apareceu, quantas viraram clique.",
+    description: "CTR de link: cliques no link ÷ impressões × 100.",
     format: "percent",
     polarity: "higher-is-better",
     additive: false,
   },
   linkCpc: {
     key: "linkCpc",
-    label: "CPC de link",
-    description: "Investimento ÷ cliques no link.",
+    label: "Custo por clique",
+    explanation: "Quanto custou, em média, cada clique no anúncio.",
+    description: "CPC de link: investimento ÷ cliques no link.",
     format: "currency",
     polarity: "lower-is-better",
     additive: false,
   },
   cpm: {
     key: "cpm",
-    label: "CPM",
-    description: "Custo por mil impressões (investimento ÷ impressões × 1000).",
+    label: "Custo por mil exibições",
+    explanation: "Quanto custou mostrar o anúncio mil vezes.",
+    description: "CPM: investimento ÷ impressões × 1000.",
     format: "currency",
     polarity: "lower-is-better",
     additive: false,
@@ -102,8 +117,9 @@ export const METRICS: Record<MetricKey, MetricDefinition> = {
   results: {
     key: "results",
     label: "Resultados",
+    explanation: "O que os anúncios trouxeram de concreto: compras, conversas ou cadastros.",
     description:
-      "Quantidade do resultado definido pela meta de otimização da campanha (ex.: compras, leads). Tipos diferentes não são somados.",
+      "Quantidade do resultado definido pela meta de otimização da campanha. Tipos diferentes não são somados.",
     format: "integer",
     polarity: "higher-is-better",
     additive: true,
@@ -111,9 +127,19 @@ export const METRICS: Record<MetricKey, MetricDefinition> = {
   costPerResult: {
     key: "costPerResult",
     label: "Custo por resultado",
-    description: "Investimento ÷ resultados, apenas quando todos os resultados são do mesmo tipo.",
+    explanation: "Quanto custou, em média, cada resultado. Quanto menor, melhor.",
+    description: "Investimento ÷ resultados, apenas entre campanhas com o mesmo tipo de resultado.",
     format: "currency",
     polarity: "lower-is-better",
+    additive: false,
+  },
+  roas: {
+    key: "roas",
+    label: "Retorno",
+    explanation: "Para cada R$ 1 investido, quantos reais voltaram em vendas.",
+    description: "ROAS: valor das compras atribuídas aos anúncios ÷ investimento.",
+    format: "multiplier",
+    polarity: "higher-is-better",
     additive: false,
   },
 };

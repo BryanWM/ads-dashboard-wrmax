@@ -9,6 +9,7 @@ import { comparableRanges } from "@/lib/dates/coverage";
 import type { PeriodSelection } from "@/lib/dates/period-params";
 import { addDays, rangeLength, type DateRange } from "@/lib/dates/periods";
 import type {
+  AdView,
   CampaignRow,
   CampaignsData,
   ClientSummary,
@@ -16,11 +17,13 @@ import type {
   DashboardData,
   MetricsSnapshot,
   SyncStatus,
+  TypedDay,
 } from "@/lib/domain/types";
 import {
   aggregateByResultType,
   aggregateComponents,
   deriveMetrics,
+  safeRatio,
   type DailyComponents,
   type PeriodReach,
 } from "@/lib/metrics/derive";
@@ -93,15 +96,19 @@ function campaignRows(campaign: SimCampaign, ctx: SimContext, dataThrough: strin
     seed: campaign.seed,
     baseSpend: campaign.baseSpend,
     resultIndicator: campaign.resultIndicator,
+    averageTicket: campaign.averageTicket,
   })
     .filter((d) => d.date >= firstDay && d.date <= lastDay)
-    .map(({ date, spend, impressions, linkClicks, results, resultIndicator }) => ({
-      date,
-      spend,
-      impressions,
-      linkClicks,
-      results,
-      resultIndicator,
+    .map((d) => ({
+      date: d.date,
+      spend: d.spend,
+      impressions: d.impressions,
+      linkClicks: d.linkClicks,
+      results: d.results,
+      resultIndicator: d.resultIndicator,
+      purchaseValue: d.purchaseValue,
+      addToCart: d.addToCart,
+      initiateCheckout: d.initiateCheckout,
     }));
 
   seriesCache.set(key, rows);
@@ -120,7 +127,46 @@ function toComponents(rows: readonly DailyComponents[]): DailyComponents {
     linkClicks: a.linkClicks,
     results: a.results,
     resultIndicator: a.resultIndicator,
+    purchaseValue: a.purchaseValue,
+    addToCart: a.addToCart,
+    initiateCheckout: a.initiateCheckout,
   };
+}
+
+function byType(rows: readonly DailyComponents[]): Record<string, TypedDay> {
+  return Object.fromEntries(
+    aggregateByResultType(rows).map((t) => [
+      t.resultIndicator,
+      { spend: t.spend, results: t.results, purchaseValue: t.purchaseValue },
+    ]),
+  );
+}
+
+/** Ad-level demo: each ad takes a share of its campaign's spend and results. */
+function buildAds(client: SimClient, current: Map<string, DatedRow[]>): AdView[] | null {
+  const campaigns = allCampaigns(client).filter((c) => c.ads?.length);
+  if (campaigns.length === 0) return null;
+  return campaigns.flatMap((c) => {
+    const totals = aggregateComponents(current.get(c.id) ?? []);
+    return (c.ads ?? []).map((ad) => {
+      const spend = totals.spend === null ? null : round2(totals.spend * ad.spendShare);
+      const results = totals.results === null ? null : Math.round(totals.results * ad.resultShare);
+      return {
+        id: ad.id,
+        name: ad.name,
+        campaignName: c.name,
+        thumbnailUrl: ad.thumbnailUrl,
+        resultIndicator: c.resultIndicator,
+        spend,
+        results,
+        costPerResult: safeRatio(spend, results),
+      };
+    });
+  });
+}
+
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
 }
 
 /** Stand-in for Meta's deduplicated reach: frequency grows with period length. */
@@ -143,6 +189,8 @@ export function clientSummary(client: SimClient): ClientSummary {
     currency: SIM_CURRENCY,
     timezone: SIM_TIMEZONE,
     adAccountCount: client.accounts.length,
+    objective: client.objective,
+    costPerResultGoal: client.costPerResultGoal,
   };
 }
 
@@ -161,7 +209,11 @@ export function buildDashboard(
 ): DashboardData {
   const sync = syncStatusFor(client, ctx);
   const cover = comparableRanges(selection.range, selection.previous, sync.dataThrough);
-  const perCampaign = allCampaigns(client).map((c) => campaignRows(c, ctx, sync.dataThrough));
+  const campaigns = allCampaigns(client);
+  const perCampaign = campaigns.map((c) => campaignRows(c, ctx, sync.dataThrough));
+  const currentByCampaign = new Map(
+    campaigns.map((c, i) => [c.id, inRange(perCampaign[i] ?? [], selection.range)]),
+  );
   const all = perCampaign.flat();
   const current = inRange(all, selection.range);
   const previous = inRange(all, cover.comparison);
@@ -181,7 +233,14 @@ export function buildDashboard(
 
   const daily: DailyPoint[] = Array.from({ length: rangeLength(selection.range) }, (_, i) => {
     const date = addDays(selection.range.from, i);
-    return { date, current: dayRows(date), previous: dayRows(addDays(selection.previous.from, i)) };
+    const previousDate = addDays(selection.previous.from, i);
+    return {
+      date,
+      current: dayRows(date),
+      previous: dayRows(previousDate),
+      currentByType: byType(byDate.get(date) ?? []),
+      previousByType: byType(byDate.get(previousDate) ?? []),
+    };
   });
 
   return {
@@ -195,6 +254,7 @@ export function buildDashboard(
     previous: snapshot(previous, cover.comparison, reachAvailable),
     daily,
     reachAvailable,
+    ads: buildAds(client, currentByCampaign),
     sync,
   };
 }
