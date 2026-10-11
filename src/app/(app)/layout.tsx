@@ -1,0 +1,56 @@
+import { Suspense } from "react";
+
+import { AppSidebar, AppSidebarSkeleton } from "@/components/layout/app-sidebar";
+import { NavigationPendingProvider, PendingContent } from "@/components/layout/navigation-pending";
+import { Topbar } from "@/components/layout/topbar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { canAccessAdmin, isAgencyMember, toViewerView } from "@/lib/domain/access";
+import { getViewer } from "@/server/auth/session";
+import { DATA_ORIGIN, getDataSource } from "@/server/data/source";
+
+const simulated = DATA_ORIGIN === "simulated";
+
+async function SidebarLoader() {
+  const viewer = await getViewer();
+  const clients = await getDataSource(viewer).listClients();
+  return (
+    <AppSidebar
+      clients={clients}
+      viewer={toViewerView(viewer)}
+      showAdmin={canAccessAdmin(viewer)}
+      demo={simulated}
+    />
+  );
+}
+
+async function TopbarLoader() {
+  const viewer = await getViewer();
+  return <Topbar simulated={simulated} clientView={!isAgencyMember(viewer)} />;
+}
+
+/**
+ * Authenticated shell. The layout itself awaits nothing (it would block every
+ * page); request-bound pieces (session, clients) stream inside their own
+ * Suspense boundaries. Authorization is enforced again in each data call.
+ */
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <NavigationPendingProvider>
+        <Suspense fallback={<AppSidebarSkeleton />}>
+          <SidebarLoader />
+        </Suspense>
+        <SidebarInset className="min-w-0">
+          <Suspense fallback={<div className="h-14 border-b border-border/70" />}>
+            <TopbarLoader />
+          </Suspense>
+          <PendingContent>
+            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
+              {children}
+            </div>
+          </PendingContent>
+        </SidebarInset>
+      </NavigationPendingProvider>
+    </SidebarProvider>
+  );
+}

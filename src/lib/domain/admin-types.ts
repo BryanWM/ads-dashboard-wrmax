@@ -1,0 +1,92 @@
+import type { DataOrigin, SyncHealth } from "./types";
+
+export type MembershipRole = "owner" | "admin" | "analyst" | "client_viewer";
+
+export const ROLE_LABELS: Record<MembershipRole, string> = {
+  owner: "Proprietário",
+  admin: "Administrador",
+  analyst: "Analista",
+  client_viewer: "Cliente (leitura)",
+};
+
+export type ConnectionStatus = "active" | "needs_reauth" | "revoked" | "error";
+
+export interface PlatformConnectionView {
+  id: string;
+  platform: "meta";
+  label: string;
+  status: ConnectionStatus;
+  tokenType: "system_user" | "user";
+  scopes: string[];
+  lastValidatedAt: string | null;
+  /** null = token does not expire (system user). */
+  expiresAt: string | null;
+}
+
+export interface AdAccountView {
+  id: string;
+  externalId: string;
+  name: string;
+  clientId: string | null;
+  clientName: string | null;
+  currency: string;
+  timezone: string;
+  syncEnabled: boolean;
+  health: SyncHealth;
+  lastSuccessAt: string | null;
+}
+
+export interface ClientAdminView {
+  id: string;
+  name: string;
+  adAccountCount: number;
+  memberCount: number;
+  health: SyncHealth;
+  lastSuccessAt: string | null;
+}
+
+export type SyncRunStatus = "running" | "succeeded" | "partial" | "failed";
+
+export interface SyncRunView {
+  id: string;
+  trigger: "cron" | "manual" | "retry";
+  startedAt: string;
+  finishedAt: string | null;
+  status: SyncRunStatus;
+  accountsTotal: number;
+  accountsFailed: number;
+  rowsUpserted: number;
+  /** Sanitised summary of failures, never raw API payloads. */
+  failureSummary: string | null;
+}
+
+export interface MemberView {
+  id: string;
+  name: string;
+  email: string;
+  role: MembershipRole;
+  /** Client names visible to a client_viewer; null = whole organisation. */
+  clientScope: string[] | null;
+  lastSeenAt: string | null;
+}
+
+export interface AuditEventView {
+  id: string;
+  at: string;
+  actor: string;
+  action: string;
+  target: string;
+}
+
+export interface AdminOverview {
+  origin: DataOrigin;
+  organizationName: string;
+  /** IANA timezone used to display instants on admin screens. */
+  organizationTimezone: string;
+  connections: PlatformConnectionView[];
+  clients: ClientAdminView[];
+  adAccounts: AdAccountView[];
+  syncRuns: SyncRunView[];
+  members: MemberView[];
+  audit: AuditEventView[];
+}
