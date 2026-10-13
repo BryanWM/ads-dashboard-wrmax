@@ -12,6 +12,7 @@ import type {
   SyncRunStatus,
   SyncRunView,
 } from "@/lib/domain/admin-types";
+import type { ClientObjective } from "@/lib/domain/types";
 import { combineSyncStates, num, type SyncStateRow } from "@/lib/read-model/db-rows";
 
 function must<T>(result: { data: T | null; error: { message: string } | null }): T {
@@ -55,7 +56,12 @@ export async function loadSupabaseAdminOverview(
       .select("id, label, status, token_type, scopes, last_validated_at, expires_at")
       .eq("organization_id", organizationId)
       .order("created_at"),
-    db.from("clients").select("id, name").eq("organization_id", organizationId).order("created_at"),
+    db
+      .from("clients")
+      .select("id, name, objective, cost_per_result_goal")
+      .eq("organization_id", organizationId)
+      .eq("status", "active")
+      .order("created_at"),
     db
       .from("ad_accounts")
       .select("id, external_id, name, client_id, currency, timezone_name, sync_enabled")
@@ -90,7 +96,12 @@ export async function loadSupabaseAdminOverview(
   const orgRow = must(org) as { name: string; default_timezone: string } | null;
   if (!orgRow) return null;
 
-  const clientRows = must(clients) as { id: string; name: string }[];
+  const clientRows = must(clients) as {
+    id: string;
+    name: string;
+    objective: ClientObjective | null;
+    cost_per_result_goal: number | string | null;
+  }[];
   const clientName = new Map(clientRows.map((c) => [c.id, c.name]));
   const accountRows = must(accounts) as {
     id: string;
@@ -217,6 +228,8 @@ export async function loadSupabaseAdminOverview(
       return {
         id: c.id,
         name: c.name,
+        objective: c.objective,
+        costPerResultGoal: num(c.cost_per_result_goal),
         adAccountCount: own.length,
         memberCount: memberRows.filter((m) => m.client_id === c.id).length,
         health: sync.health,

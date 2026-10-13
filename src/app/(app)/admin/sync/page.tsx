@@ -20,8 +20,9 @@ import {
   AdminAccessDenied,
   AdminSkeleton,
   AdminTableCard,
-  ReadOnlyNotice,
+  DemoReadOnlyNotice,
 } from "../_components/admin-ui";
+import { isDemoMode } from "@/server/auth/session";
 
 export const metadata: Metadata = { title: "Sincronizações" };
 
@@ -62,7 +63,7 @@ async function SyncRuns() {
         title="Sincronizações"
         description="Execuções diárias do agendador (06:10, horário de Brasília) e retentativas."
       />
-      <ReadOnlyNotice />
+      {isDemoMode() ? <DemoReadOnlyNotice /> : null}
       <AdminTableCard title="Histórico recente">
         <Table>
           <TableHeader>

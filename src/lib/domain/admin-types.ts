@@ -1,4 +1,4 @@
-import type { DataOrigin, SyncHealth } from "./types";
+import type { ClientObjective, DataOrigin, SyncHealth } from "./types";
 
 /**
  * Two roles only (ADR-009): the agency admin manages everything; a client user sees
@@ -41,6 +41,8 @@ export interface AdAccountView {
 export interface ClientAdminView {
   id: string;
   name: string;
+  objective: ClientObjective | null;
+  costPerResultGoal: number | null;
   adAccountCount: number;
   memberCount: number;
   health: SyncHealth;
@@ -63,6 +65,7 @@ export interface SyncRunView {
 }
 
 export interface MemberView {
+  /** auth user id */
   id: string;
   name: string;
   email: string;

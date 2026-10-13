@@ -22,8 +22,10 @@ import {
   AdminAccessDenied,
   AdminSkeleton,
   AdminTableCard,
-  ReadOnlyNotice,
+  DemoReadOnlyNotice,
+  MetaPendingNotice,
 } from "./_components/admin-ui";
+import { isDemoMode } from "@/server/auth/session";
 
 export const metadata: Metadata = { title: "Integrações" };
 
@@ -79,7 +81,7 @@ async function Integrations() {
         title="Integrações"
         description={`${data.organizationName} · status das conexões e das contas de anúncios`}
       />
-      <ReadOnlyNotice />
+      {isDemoMode() ? <DemoReadOnlyNotice /> : <MetaPendingNotice />}
 
       <div className="grid gap-3 sm:grid-cols-3">
         {stats.map(({ label, value, Icon, tone }) => (

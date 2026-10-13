@@ -161,6 +161,8 @@ export function buildAdminOverview(ctx: SimContext): AdminOverview {
       return {
         id: client.id,
         name: client.name,
+        objective: client.objective,
+        costPerResultGoal: client.costPerResultGoal,
         adAccountCount: client.accounts.length,
         memberCount: MEMBERS.filter((m) => m.clientName === client.name).length,
         health: sync.health,

@@ -17,8 +17,9 @@ import {
   AdminAccessDenied,
   AdminSkeleton,
   AdminTableCard,
-  ReadOnlyNotice,
+  DemoReadOnlyNotice,
 } from "../_components/admin-ui";
+import { isDemoMode } from "@/server/auth/session";
 
 export const metadata: Metadata = { title: "Auditoria" };
 
@@ -40,7 +41,7 @@ async function Audit() {
         title="Auditoria"
         description="Registro imutável das ações administrativas: quem fez, o quê e quando."
       />
-      <ReadOnlyNotice />
+      {isDemoMode() ? <DemoReadOnlyNotice /> : null}
       <AdminTableCard title="Eventos recentes">
         <Table>
           <TableHeader>

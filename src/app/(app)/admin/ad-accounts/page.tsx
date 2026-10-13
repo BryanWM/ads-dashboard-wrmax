@@ -14,13 +14,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDateTime } from "@/lib/format";
+import { isDemoMode } from "@/server/auth/session";
 import { loadAdminOverview } from "@/server/data/admin";
 
+import { AccountClientSelect } from "../_components/account-client-select";
 import {
   AdminAccessDenied,
   AdminSkeleton,
   AdminTableCard,
-  ReadOnlyNotice,
+  DemoReadOnlyNotice,
+  MetaPendingNotice,
 } from "../_components/admin-ui";
 
 export const metadata: Metadata = { title: "Contas de anúncio" };
@@ -36,14 +39,16 @@ export default function AdminAdAccountsPage() {
 async function AdAccounts() {
   const data = await loadAdminOverview();
   if (!data) return <AdminAccessDenied />;
+  const editable = !isDemoMode();
+  const clients = data.clients.map((c) => ({ id: c.id, name: c.name }));
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Administração"
         title="Contas de anúncio"
-        description="Contas disponíveis pela conexão Meta, cliente associado e sincronização."
+        description="Contas disponíveis pela conexão Meta e o cliente de cada uma. Ao trocar o cliente, o histórico da conta vai junto."
       />
-      <ReadOnlyNotice />
+      {editable ? <MetaPendingNotice /> : <DemoReadOnlyNotice />}
       <AdminTableCard title={`${data.adAccounts.length} contas`}>
         <Table>
           <TableHeader>
@@ -64,7 +69,16 @@ async function AdAccounts() {
                   <p className="font-mono text-xs text-muted-foreground">{a.externalId}</p>
                 </TableCell>
                 <TableCell>
-                  {a.clientName ?? <Badge variant="outline">Sem cliente</Badge>}
+                  {editable ? (
+                    <AccountClientSelect
+                      accountId={a.id}
+                      accountName={a.name}
+                      clientId={a.clientId}
+                      clients={clients}
+                    />
+                  ) : (
+                    (a.clientName ?? <Badge variant="outline">Sem cliente</Badge>)
+                  )}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {a.currency} · {a.timezone}

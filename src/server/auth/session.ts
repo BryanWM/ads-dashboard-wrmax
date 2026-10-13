@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 
 import type { Viewer } from "@/lib/domain/access";
@@ -51,6 +52,9 @@ async function demoViewer(): Promise<Viewer> {
 }
 
 async function supabaseViewer(): Promise<Viewer> {
+  // Request-time on purpose: verifying the JWT reads the clock (expiry), which
+  // Cache Components forbids during prerendering.
+  await connection();
   const supabase = await createUserSupabase();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
