@@ -1,8 +1,35 @@
 # Modelo de dados
 
-PostgreSQL (Supabase). Migrações versionadas em `supabase/migrations/`.
-Este documento é o desenho da Fase 1; a implementação ocorre na Fase 5 e pode
-refinar nomes, mas não os princípios.
+PostgreSQL (Supabase). Migrações versionadas em `supabase/migrations/`; a fonte da verdade
+é o SQL — este documento resume o desenho e os princípios.
+
+## Aplicando no Supabase (sem CLI)
+
+1. Supabase → **SQL Editor** → cole `supabase/migrations/<arquivo>.sql` → **Run**. Cada
+   migração roda uma única vez, em ordem de nome.
+2. Depois, cole `supabase/tests/rls_isolation.sql` → **Run**. Deve terminar com
+   "OK — isolamento verificado". Ele roda numa transação desfeita: não grava nada.
+
+Antes de entregar uma migração, ela é validada localmente no PGlite (Postgres em
+WebAssembly) com o mesmo teste, incluindo uma rodada com políticas sabotadas para provar que
+o teste detecta vazamentos.
+
+### O que a implementação refinou em relação ao desenho original
+
+- `sync_runs` é **por organização** (`organization_id`): o agendador abre uma execução por
+  agência, e o histórico de uma agência nunca mostra contas de outra.
+- `sync_events` e `ad_account_sync_state` também carregam `organization_id`;
+  `ad_account_sync_state.last_error_message` guarda o texto sanitizado exibido ao cliente.
+- `platform_connections.label` (nome exibido na Administração).
+- `source` das métricas é o enum `data_source` (`meta` | `simulated`): linhas simuladas
+  sempre acionam o selo "Dados simulados".
+- `ads` e `ad_metrics_daily` já existem (contrato da visão do cliente).
+- Chaves estrangeiras **compostas** `(organization_id, …)`: uma linha nunca aponta para
+  conta, campanha ou cliente de outra agência. Gatilhos copiam o `client_id` da conta de
+  anúncios para campanhas, anúncios, métricas e estado de sync; reassociar a conta move
+  todo o histórico junto.
+- O segredo da conexão só é lido/gravado pela service role via
+  `read_platform_credential` / `write_platform_credential` (schema `private` não é exposto).
 
 ## Princípios
 
@@ -89,25 +116,32 @@ erDiagram
 
 ## RLS (resumo)
 
-Funções auxiliares `security definer`, `stable`, com `search_path` fixo:
+Funções auxiliares no schema `app` (não exposto pela API), `security definer`, `stable`,
+`search_path` vazio. Retornam conjuntos, avaliados uma vez por consulta:
 
-- `app.is_org_member(org uuid)` — qualquer papel na organização.
-- `app.has_org_role(org uuid, roles membership_role[])`.
-- `app.can_view_client(client uuid)` — `admin` da organização do cliente **ou** usuário
-  `client` cuja `memberships.client_id` é esse cliente.
+- `app.admin_org_ids()` — organizações em que o usuário é `admin`.
+- `app.member_org_ids()` — organizações em que o usuário tem qualquer papel.
+- `app.client_ids()` — o cliente do usuário `client`.
+- `app.can_view_client(client uuid)` — para checagens pontuais na aplicação.
 
-Políticas:
+Políticas (padrão das tabelas de dados:
+`organization_id in (select app.admin_org_ids()) or client_id in (select app.client_ids())`):
 
-- `organizations`, `clients`, `ad_accounts`, `campaigns`, `*_metrics_*`,
-  `ad_account_sync_state`: `select` se `can_view_client(client_id)`; linhas sem
-  `client_id` exigem papel de agência.
-- Escrita em tabelas de cadastro: `has_org_role(organization_id, {admin})`.
-- Tabelas de métricas e de sync: **sem escrita** para `authenticated`; só a
-  _service role_ (motor de sync) grava.
-- `private.*`: sem grants para `anon`/`authenticated`.
+- **Leitura**: agência lê a organização inteira (inclusive contas sem cliente); cliente lê só
+  o próprio cadastro, contas, campanhas, anúncios, métricas, alcance e estado de sync.
+  Conexões, sincronizações e auditoria: só a agência.
+- **Escrita** (privilégios por coluna + RLS): a agência cria/edita clientes (nome, status,
+  objetivo, meta), associa contas (`client_id`, `sync_enabled`), edita a organização e
+  registra auditoria em nome próprio. Vínculos (`memberships`) só pela service role, porque
+  criar o login de um cliente exige a API admin do Auth.
+- Métricas e sync: **sem escrita** para `authenticated`; só a service role (motor de sync).
+- `anon` não tem privilégio em nenhuma tabela; tabelas futuras nascem fechadas
+  (`alter default privileges`).
+- Auditoria é append-only: sem `update`/`delete` para usuários.
 
-Testes obrigatórios (Fase 5/8): usuário da organização A não lê nada da B, mesmo
-passando IDs da B; usuário `client` do cliente X não lê o cliente Y da mesma agência.
+Teste: `supabase/tests/rls_isolation.sql` cobre agência A × agência B (mesmo passando IDs
+da B), cliente X × cliente Y da mesma agência, escritas proibidas, anônimo e a herança do
+`client_id`.
 
 ## §6 — Alcance e frequência
 
