@@ -33,13 +33,24 @@ Só dois tipos de pessoa (ADR-009):
 | Passo                                       | Onde                        | Hoje                     |
 | ------------------------------------------- | --------------------------- | ------------------------ |
 | Conectar a conta Meta Business              | Administração → Integrações | Só visualização · Fase 6 |
-| Cadastrar cliente, objetivo e meta de custo | Administração → Clientes    | Só visualização · Fase 5 |
-| Associar contas de anúncio ao cliente       | Administração → Contas      | Só visualização · Fase 5 |
-| Criar o login do cliente                    | Administração → Acessos     | Só visualização · Fase 5 |
+| Cadastrar cliente, objetivo e meta de custo | Administração → Clientes    | Funciona                 |
+| Associar contas de anúncio ao cliente       | Administração → Contas      | Funciona                 |
+| Criar o login do cliente                    | Administração → Acessos     | Funciona                 |
 
 O **objetivo** (vendas, conversas ou cadastros) define o "resultado principal" da Visão
 geral. A **meta de custo** liga o selo Saudável / Atenção / Crítico. Sem eles, o sistema
 usa o tipo de resultado com mais investimento e não mostra selo.
+
+**Login do cliente, passo a passo**
+
+1. Administração → Acessos → **Criar acesso de cliente** (nome, e-mail, cliente).
+2. O sistema mostra um **link de uso único**. Copie e envie à pessoa (ex.: WhatsApp). O link
+   não fica salvo: se perder ou expirar, use **Novo link** na lista.
+3. A pessoa abre o link, cria a própria senha e já entra vendo só o cliente dela.
+4. Esqueceu a senha? **Novo link** na lista de acessos. Para cortar o acesso: lixeira
+   (**Remover acesso**). Tudo fica registrado em Auditoria.
+
+Nenhum e-mail é enviado pelo sistema: quem entrega o link é a agência.
 
 ### 4–5. Atualização automática
 
