@@ -86,7 +86,7 @@ No desktop (≥ 1024 px) vira grade bento com gráfico principal, funil e campe�
   a `etiqueta` usa 12 px, e não os 11 px do DS). Tabelas viram lista de cartões.
 - Funil: "Viram" como número de destaque; barras a partir de "Clicaram" (100%), lineares.
 
-**Premissas a validar com a agência** (`src/lib/overview/signals.ts`)
+**Limites aprovados pela agência** (`src/lib/overview/signals.ts`)
 
 - Selo de saúde: custo ≤ meta = Saudável; até 20% acima = Atenção; acima disso = Crítico.
 - Frequência alta: média acima de **3,5** visualizações por pessoa no período.

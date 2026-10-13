@@ -40,7 +40,7 @@ async function Access() {
       <PageHeader
         eyebrow="Administração"
         title="Acessos"
-        description="Equipe da agência vê todos os clientes; usuários de cliente veem apenas os clientes liberados."
+        description="A agência vê todos os clientes; cada cliente vê apenas os próprios dados."
       />
       <ReadOnlyNotice />
       <AdminTableCard title={`${data.members.length} usuários`}>
@@ -61,13 +61,11 @@ async function Access() {
                   <p className="text-xs text-muted-foreground">{m.email}</p>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={m.role === "client_viewer" ? "outline" : "secondary"}>
+                  <Badge variant={m.role === "client" ? "outline" : "secondary"}>
                     {ROLE_LABELS[m.role]}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-sm">
-                  {m.clientScope ? m.clientScope.join(", ") : "Todos os clientes"}
-                </TableCell>
+                <TableCell className="text-sm">{m.clientName ?? "Todos os clientes"}</TableCell>
                 <TableCell className="pr-5">
                   {formatDateTime(m.lastSeenAt, data.organizationTimezone)}
                 </TableCell>

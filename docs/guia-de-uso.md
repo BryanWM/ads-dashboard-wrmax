@@ -5,11 +5,12 @@ se **já funciona** (com dados simulados) ou se **depende de uma fase futura**.
 
 ## Quem usa
 
-| Pessoa                        | Papel no sistema | O que vê                                                 |
-| ----------------------------- | ---------------- | -------------------------------------------------------- |
-| Dono / administrador agência  | `owner`, `admin` | Todos os clientes + área de Administração                |
-| Gestor de tráfego             | `analyst`        | Todos os clientes (relatórios), sem administrar          |
-| Cliente final (ex.: pizzaria) | `client_viewer`  | Só os clientes liberados para ele; nada de Administração |
+Só dois tipos de pessoa (ADR-009):
+
+| Pessoa                          | Papel no sistema | O que vê                                                 |
+| ------------------------------- | ---------------- | -------------------------------------------------------- |
+| Agência (dono / administrador)  | `admin`          | Todos os clientes + área de Administração                |
+| Cliente final (ex.: a pizzaria) | `client`         | Só os próprios dados; não escolhe cliente nem administra |
 
 ## Fluxo de atividades
 
@@ -21,7 +22,7 @@ se **já funciona** (com dados simulados) ou se **depende de uma fase futura**.
     (objetivo + meta de custo)          5. Marca falhas e avisa a             "meu investimento está
  3. Associa as contas de anúncio           agência                            dando resultado?"
     e convida o cliente                                                    8. Consulta Campanhas
-                                        GESTOR (rotina)
+                                        AGÊNCIA (rotina)
                                         ─ confere Sincronizações e
                                           "Contas que precisam de atenção"
                                         ─ analisa clientes e campanhas
@@ -34,7 +35,7 @@ se **já funciona** (com dados simulados) ou se **depende de uma fase futura**.
 | Conectar a conta Meta Business              | Administração → Integrações | Só visualização · Fase 6 |
 | Cadastrar cliente, objetivo e meta de custo | Administração → Clientes    | Só visualização · Fase 5 |
 | Associar contas de anúncio ao cliente       | Administração → Contas      | Só visualização · Fase 5 |
-| Convidar usuários e liberar clientes        | Administração → Acessos     | Só visualização · Fase 5 |
+| Criar o login do cliente                    | Administração → Acessos     | Só visualização · Fase 5 |
 
 O **objetivo** (vendas, conversas ou cadastros) define o "resultado principal" da Visão
 geral. A **meta de custo** liga o selo Saudável / Atenção / Crítico. Sem eles, o sistema
@@ -50,7 +51,7 @@ usa o tipo de resultado com mais investimento e não mostra selo.
   - **Administração → Sincronizações** (histórico e retentativas).
 - Toda ação administrativa fica registrada em **Administração → Auditoria**.
 
-### 6–8. Uso pelo cliente (e pelo gestor)
+### 6–8. Uso pelo cliente (e pela agência)
 
 **Visão geral** (`/dashboard`) — já funciona:
 
@@ -74,7 +75,8 @@ usa o tipo de resultado com mais investimento e não mostra selo.
 período, com busca por nome, filtro Ativas / Pausadas e ordenação por coluna. No celular
 vira uma lista de cartões.
 
-**Trocar de cliente** (só agência): seletor no topo do menu lateral. O cliente e o
+**Trocar de cliente** (só agência): seletor no topo do menu lateral. O cliente não vê
+seletor — só o nome do próprio negócio. O cliente e o
 período escolhidos acompanham a navegação entre as telas.
 
 ## Como explorar hoje (modo demonstração)

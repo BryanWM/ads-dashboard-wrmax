@@ -1,12 +1,14 @@
 import type { DataOrigin, SyncHealth } from "./types";
 
-export type MembershipRole = "owner" | "admin" | "analyst" | "client_viewer";
+/**
+ * Two roles only (ADR-009): the agency admin manages everything; a client user sees
+ * exactly one client — their own.
+ */
+export type MembershipRole = "admin" | "client";
 
 export const ROLE_LABELS: Record<MembershipRole, string> = {
-  owner: "Proprietário",
-  admin: "Administrador",
-  analyst: "Analista",
-  client_viewer: "Cliente (leitura)",
+  admin: "Agência",
+  client: "Cliente",
 };
 
 export type ConnectionStatus = "active" | "needs_reauth" | "revoked" | "error";
@@ -65,8 +67,8 @@ export interface MemberView {
   name: string;
   email: string;
   role: MembershipRole;
-  /** Client names visible to a client_viewer; null = whole organisation. */
-  clientScope: string[] | null;
+  /** The client a client user belongs to; null for the agency admin (every client). */
+  clientName: string | null;
   lastSeenAt: string | null;
 }
 

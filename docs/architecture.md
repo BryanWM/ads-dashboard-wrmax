@@ -131,8 +131,9 @@ flowchart LR
 
 - Toda linha de dado de negócio carrega `organization_id` (e `client_id` quando
   aplicável) **desnormalizado**, para que as políticas RLS sejam simples e indexáveis.
-- Papéis (`membership_role`): `owner`, `admin`, `analyst` (equipe da agência) e
-  `client_viewer` (usuário do cliente final, com escopo restrito a `client_members`).
+- Papéis (`membership_role`), só dois (ADR-009): `admin` (a agência: vê e administra
+  todos os clientes) e `client` (o cliente final: vê apenas o próprio cliente,
+  `memberships.client_id`).
 - Verificação em **três camadas**:
   1. _proxy_ apenas renova a sessão e redireciona anônimos (nunca é a única barreira);
   2. **DAL** (`src/server/auth`) — cada Server Component/Action verifica sessão e papel;

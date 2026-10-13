@@ -5,7 +5,7 @@
 **Dentro**
 
 - Autenticação por e-mail/senha (Supabase Auth) e convites por e-mail.
-- Multi-organização com papéis `owner`, `admin`, `analyst`, `client_viewer`.
+- Multi-organização com dois papéis: `admin` (agência) e `client` (vê só o próprio cliente).
 - Admin: organizações, clientes, conexão Meta, seleção/associação de contas, status das
   integrações, histórico de sincronizações, falhas, acessos, auditoria.
 - Cliente: dashboard (KPIs, comparação com período anterior, gráfico histórico),
@@ -35,12 +35,6 @@
 | 8. Validação         | Segurança, responsividade, acessibilidade, desempenho                                                   | Relatório de testes executados                          |
 | 9. Implantação       | Vercel + Supabase, variáveis, cron, migrações, runbook                                                  | Deploy de produção com sync agendado                    |
 | 10. (Opcional) Vídeo | Projeto `video-reports/` com HyperFrames                                                                | Avaliado separadamente                                  |
-
-## Backlog
-
-- **Validar com o Max os limites da Visão geral** (`src/lib/overview/signals.ts`): selo de
-  saúde (até 20% acima da meta = Atenção), frequência alta (> 3,5) e custo "estável"
-  (variação < 1%). Até lá, valem os valores assumidos.
 
 ## Dependências externas por fase
 

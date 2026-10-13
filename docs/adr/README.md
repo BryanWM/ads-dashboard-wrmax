@@ -60,6 +60,17 @@ próximo número; decisões substituídas são marcadas, não apagadas.
 - **Consequências**: o requisito de tema claro fica pendente de uma definição no DS. Os
   tokens vivem em `globals.css` espelhando `tokens.json`; mudanças de marca começam no DS.
 
+## ADR-009 — Dois papéis: agência e cliente
+
+- **Contexto**: o produto terá só dois tipos de pessoa: a agência (dono/administrador) e o
+  cliente final, que é o próprio cliente — não escolhe entre clientes.
+- **Decisão**: `membership_role` = `admin` | `client`. O usuário `client` pertence a
+  exatamente um cliente (`memberships.client_id`, obrigatório para `client` e nulo para
+  `admin`). Substitui `owner`/`analyst`/`client_viewer` e a tabela `client_members`.
+- **Consequências**: RLS mais simples (`can_view_client` compara um único id). Se um dia
+  houver equipe com acesso parcial ou um usuário com vários negócios, volta-se a uma
+  tabela de vínculo — mudança de schema, não de telas.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.

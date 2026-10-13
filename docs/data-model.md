@@ -30,8 +30,7 @@ erDiagram
   organizations ||--o{ memberships : has
   profiles ||--o{ memberships : has
   organizations ||--o{ clients : owns
-  clients ||--o{ client_members : grants
-  profiles ||--o{ client_members : has
+  clients ||--o{ memberships : "client users"
   organizations ||--o{ platform_connections : owns
   platform_connections ||--|| platform_credentials : "secret (schema private)"
   platform_connections ||--o{ ad_accounts : exposes
@@ -51,13 +50,12 @@ erDiagram
 
 ### Identidade e acesso
 
-| Tabela           | Colunas principais                                                                                    | Observações                                                            |
-| ---------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `organizations`  | `id uuid pk`, `name`, `slug unique`, `default_timezone`, `created_at`                                 | A agência (tenant).                                                    |
-| `profiles`       | `id uuid pk = auth.users.id`, `full_name`, `avatar_url`, `is_platform_admin bool`                     | Criado por trigger no signup. `is_platform_admin` só via service role. |
-| `memberships`    | `organization_id`, `user_id`, `role membership_role`, `created_at`; **pk (organization_id, user_id)** | `membership_role`: `owner`, `admin`, `analyst`, `client_viewer`.       |
-| `clients`        | `id`, `organization_id fk`, `name`, `status (active/archived)`, `created_at`                          | Cliente final da agência. Índice `(organization_id)`.                  |
-| `client_members` | `client_id`, `user_id`, `organization_id`; **pk (client_id, user_id)**                                | Escopo de `client_viewer`. Um usuário pode ver vários clientes.        |
+| Tabela          | Colunas principais                                                                                                         | Observações                                                                                                                           |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `organizations` | `id uuid pk`, `name`, `slug unique`, `default_timezone`, `created_at`                                                      | A agência (tenant).                                                                                                                   |
+| `profiles`      | `id uuid pk = auth.users.id`, `full_name`, `avatar_url`, `is_platform_admin bool`                                          | Criado por trigger no signup. `is_platform_admin` só via service role.                                                                |
+| `memberships`   | `organization_id`, `user_id`, `role membership_role`, `client_id null fk`, `created_at`; **pk (organization_id, user_id)** | `membership_role`: `admin` (agência) ou `client`. **check**: `client` exige `client_id`; `admin` exige `client_id is null` (ADR-009). |
+| `clients`       | `id`, `organization_id fk`, `name`, `status (active/archived)`, `created_at`                                               | Cliente final da agência. Índice `(organization_id)`.                                                                                 |
 
 ### Integrações
 
@@ -95,21 +93,21 @@ Funções auxiliares `security definer`, `stable`, com `search_path` fixo:
 
 - `app.is_org_member(org uuid)` — qualquer papel na organização.
 - `app.has_org_role(org uuid, roles membership_role[])`.
-- `app.can_view_client(client uuid)` — equipe da agência (`owner/admin/analyst`) da
-  organização do cliente **ou** `client_viewer` presente em `client_members`.
+- `app.can_view_client(client uuid)` — `admin` da organização do cliente **ou** usuário
+  `client` cuja `memberships.client_id` é esse cliente.
 
 Políticas:
 
 - `organizations`, `clients`, `ad_accounts`, `campaigns`, `*_metrics_*`,
   `ad_account_sync_state`: `select` se `can_view_client(client_id)`; linhas sem
   `client_id` exigem papel de agência.
-- Escrita em tabelas de cadastro: `has_org_role(organization_id, {owner,admin})`.
+- Escrita em tabelas de cadastro: `has_org_role(organization_id, {admin})`.
 - Tabelas de métricas e de sync: **sem escrita** para `authenticated`; só a
   _service role_ (motor de sync) grava.
 - `private.*`: sem grants para `anon`/`authenticated`.
 
 Testes obrigatórios (Fase 5/8): usuário da organização A não lê nada da B, mesmo
-passando IDs da B; `client_viewer` do cliente X não lê o cliente Y da mesma agência.
+passando IDs da B; usuário `client` do cliente X não lê o cliente Y da mesma agência.
 
 ## §6 — Alcance e frequência
 

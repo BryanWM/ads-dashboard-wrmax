@@ -20,15 +20,15 @@ const VIEWERS: Record<DemoViewerKind, Viewer> = {
     id: "usr-1",
     name: "Ana Administradora",
     email: "ana@example.com",
-    role: "owner",
-    clientIds: null,
+    role: "admin",
+    clientId: null,
   },
   client: {
     id: "usr-3",
     name: "Carla (Auto Center)",
     email: "carla@example.com",
-    role: "client_viewer",
-    clientIds: ["demo-auto-center"],
+    role: "client",
+    clientId: "demo-auto-center",
   },
 };
 

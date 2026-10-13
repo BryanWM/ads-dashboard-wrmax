@@ -41,7 +41,7 @@ export function AdminTableCard({
   );
 }
 
-/** Rendered when the server refuses the admin read model (not owner/admin). */
+/** Rendered when the server refuses the admin read model (not the agency admin). */
 export function AdminAccessDenied() {
   return (
     <div className="flex flex-1 items-center justify-center py-16">
