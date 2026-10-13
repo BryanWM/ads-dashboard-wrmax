@@ -26,15 +26,21 @@
 | Fase                 | Entregas                                                                                                | Critério de pronto                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | 1. Descoberta        | `docs/` (arquitetura, modelo, Meta, HyperFrames, design)                                                | Documentos revisados pelo usuário                       |
-| 2. Fundação          | Next.js 16 + TS estrito, ESLint, Prettier, Vitest, Playwright, git, `.env.example`, CI                  | `lint`, `typecheck`, `test` e `build` passam            |
+| 2. Fundação          | Next.js 16 + TS estrito, ESLint, Prettier, Vitest, git, `.env.example`, CI                              | `lint`, `typecheck`, `test` e `build` passam            |
 | 3. Design system     | shadcn/ui inicializado e personalizado, tokens, temas, presets de movimento, página de catálogo interna | Catálogo renderiza nos dois temas, sem erros de console |
-| 4. Interface         | Login, shell com sidebar, dashboard, campanhas, admin — **dados simulados rotulados**                   | Fluxos navegáveis; testes E2E de navegação              |
+| 4. Interface         | Login, shell com sidebar, dashboard, campanhas, admin — **dados simulados rotulados**                   | Fluxos navegáveis, conferidos no navegador              |
 | 5. Backend           | Migrações, RLS, DAL, Server Actions, seed simulado                                                      | Testes de isolamento entre organizações passam          |
 | 6. Meta Ads          | OAuth/SUAT, cliente Graph API, mapeamento, erros                                                        | Consulta autorizada real conferida com o Gerenciador    |
 | 7. Sincronização     | Cron, fila, retries, logs, estado "atualizado em"                                                       | Reexecução não duplica; falha preserva dados anteriores |
 | 8. Validação         | Segurança, responsividade, acessibilidade, desempenho                                                   | Relatório de testes executados                          |
 | 9. Implantação       | Vercel + Supabase, variáveis, cron, migrações, runbook                                                  | Deploy de produção com sync agendado                    |
 | 10. (Opcional) Vídeo | Projeto `video-reports/` com HyperFrames                                                                | Avaliado separadamente                                  |
+
+## Backlog
+
+- **Validar com o Max os limites da Visão geral** (`src/lib/overview/signals.ts`): selo de
+  saúde (até 20% acima da meta = Atenção), frequência alta (> 3,5) e custo "estável"
+  (variação < 1%). Até lá, valem os valores assumidos.
 
 ## Dependências externas por fase
 

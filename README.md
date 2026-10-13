@@ -6,12 +6,12 @@ com sincronização automática diária.
 
 > **Status:** Fase 4 concluída — interface navegável com **dados simulados**
 > (login visual, painel, campanhas, administração). Ainda sem banco, autenticação real ou
-> integração com a Meta (Fases 5–7).
+> integração com a Meta (Fases 5–7). Como usar: [guia de uso](docs/guia-de-uso.md).
 
 ## Stack
 
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · shadcn/ui · Motion ·
-Supabase (PostgreSQL + Auth + RLS) · Vercel (hosting + Cron) · Vitest · Playwright.
+Supabase (PostgreSQL + Auth + RLS) · Vercel (hosting + Cron) · Vitest.
 
 ## Começando
 
@@ -23,12 +23,11 @@ cp .env.example .env.local   # preencha conforme a fase
 pnpm dev
 ```
 
-| Script          | O que faz                           |
-| --------------- | ----------------------------------- |
-| `pnpm dev`      | servidor de desenvolvimento         |
-| `pnpm check`    | lint + typecheck + testes unitários |
-| `pnpm test:e2e` | Playwright (build de produção)      |
-| `pnpm format`   | Prettier                            |
+| Script        | O que faz                           |
+| ------------- | ----------------------------------- |
+| `pnpm dev`    | servidor de desenvolvimento         |
+| `pnpm check`  | lint + typecheck + testes unitários |
+| `pnpm format` | Prettier                            |
 
 ## Documentação
 

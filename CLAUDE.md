@@ -15,8 +15,8 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
 
 ## Comandos
 
-- `pnpm dev` · `pnpm build` · `pnpm check` (lint + typecheck + unit) · `pnpm test:e2e`
-- Testes E2E rodam contra `next build && next start` (prefetch não funciona em dev).
+- `pnpm dev` · `pnpm build` · `pnpm check` (lint + typecheck + unit)
+- Sem testes E2E (Playwright removido a pedido do usuário); valide telas no navegador.
 
 ## Next.js 16.4 — regras que diferem do conhecimento antigo
 

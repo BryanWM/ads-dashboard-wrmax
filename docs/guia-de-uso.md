@@ -1,0 +1,100 @@
+# Guia de uso
+
+Como o WRMax Metrics é usado no dia a dia, quem faz o quê e em que ordem. Cada item diz
+se **já funciona** (com dados simulados) ou se **depende de uma fase futura**.
+
+## Quem usa
+
+| Pessoa                        | Papel no sistema | O que vê                                                 |
+| ----------------------------- | ---------------- | -------------------------------------------------------- |
+| Dono / administrador agência  | `owner`, `admin` | Todos os clientes + área de Administração                |
+| Gestor de tráfego             | `analyst`        | Todos os clientes (relatórios), sem administrar          |
+| Cliente final (ex.: pizzaria) | `client_viewer`  | Só os clientes liberados para ele; nada de Administração |
+
+## Fluxo de atividades
+
+```
+ AGÊNCIA (uma vez por cliente)          SISTEMA (todo dia, sozinho)        CLIENTE (quando quiser)
+ ─────────────────────────────          ───────────────────────────        ───────────────────────
+ 1. Conecta a Meta                ──►   4. Às 06:10 busca as métricas ──►  6. Recebe o convite e entra
+ 2. Cadastra o cliente                     dos últimos 28 dias             7. Abre a Visão geral:
+    (objetivo + meta de custo)          5. Marca falhas e avisa a             "meu investimento está
+ 3. Associa as contas de anúncio           agência                            dando resultado?"
+    e convida o cliente                                                    8. Consulta Campanhas
+                                        GESTOR (rotina)
+                                        ─ confere Sincronizações e
+                                          "Contas que precisam de atenção"
+                                        ─ analisa clientes e campanhas
+```
+
+### 1–3. Configuração pela agência
+
+| Passo                                       | Onde                        | Hoje                     |
+| ------------------------------------------- | --------------------------- | ------------------------ |
+| Conectar a conta Meta Business              | Administração → Integrações | Só visualização · Fase 6 |
+| Cadastrar cliente, objetivo e meta de custo | Administração → Clientes    | Só visualização · Fase 5 |
+| Associar contas de anúncio ao cliente       | Administração → Contas      | Só visualização · Fase 5 |
+| Convidar usuários e liberar clientes        | Administração → Acessos     | Só visualização · Fase 5 |
+
+O **objetivo** (vendas, conversas ou cadastros) define o "resultado principal" da Visão
+geral. A **meta de custo** liga o selo Saudável / Atenção / Crítico. Sem eles, o sistema
+usa o tipo de resultado com mais investimento e não mostra selo.
+
+### 4–5. Atualização automática
+
+- Todo dia às **06:10** (horário de Brasília) o sistema busca na Meta os últimos 28 dias
+  (a Meta corrige números de dias anteriores) — **Fase 7**.
+- Se uma conta falhar, os dados anteriores são mantidos, o cliente vê "Atualizado em…"
+  com a data real, e a falha aparece para a agência em:
+  - **Administração → Integrações** ("Contas que precisam de atenção");
+  - **Administração → Sincronizações** (histórico e retentativas).
+- Toda ação administrativa fica registrada em **Administração → Auditoria**.
+
+### 6–8. Uso pelo cliente (e pelo gestor)
+
+**Visão geral** (`/dashboard`) — já funciona:
+
+1. Escolha o período nos chips **7 dias · 30 dias · Mês atual** (ou um período
+   personalizado em Detalhes).
+2. Leia a **frase-resumo**: quanto investiu, quantos resultados, quanto custou cada um e
+   se ficou mais caro ou mais barato que o período anterior.
+3. Olhe os **4 números**: Investimento, Resultado principal, Custo por resultado e
+   Retorno (quando há vendas) ou Pessoas alcançadas. **Toque num número** para abrir a
+   explicação, o gráfico por dia e as métricas técnicas.
+4. Use as abas:
+   - **Funil** — quantas pessoas viram, clicaram e converteram;
+   - **Anúncios** — anúncios campeões e ranking de campanhas;
+   - **Detalhes** — métricas técnicas (CPM, CPC…), melhor dia da semana, resultados por
+     tipo, período personalizado.
+5. Atenção aos avisos: selo de saúde contra a meta, alerta de **frequência alta** (a
+   mesma pessoa vendo o anúncio mais de 3,5 vezes, sinal de público cansado) e falha de
+   atualização.
+
+**Campanhas** (`/campaigns`) — já funciona: lista de todas as campanhas do cliente no
+período, com busca por nome, filtro Ativas / Pausadas e ordenação por coluna. No celular
+vira uma lista de cartões.
+
+**Trocar de cliente** (só agência): seletor no topo do menu lateral. O cliente e o
+período escolhidos acompanham a navegação entre as telas.
+
+## Como explorar hoje (modo demonstração)
+
+1. Rode `pnpm dev` e abra `http://localhost:3000` (ou a porta configurada).
+2. Na tela de login, clique em **Explorar com dados simulados**. O formulário de e-mail
+   e senha ainda não envia nada (chega na Fase 5).
+3. Você entra como **Ana Administradora** (agência): vê todos os clientes e a
+   Administração.
+4. Para ver o que o cliente vê: menu do usuário (rodapé do menu lateral) →
+   **Visualizar como cliente**. Você vira **Carla (Auto Center)**, que só enxerga o Auto
+   Center Modelo. Para voltar: **Voltar para a visão da agência**.
+
+Clientes de demonstração:
+
+| Cliente                  | O que demonstra                                                    |
+| ------------------------ | ------------------------------------------------------------------ |
+| Pizzaria Demonstração    | Vendas online: Retorno, funil de 5 etapas, anúncios campeões, meta |
+| Auto Center Modelo       | Objetivos misturados (sem objetivo cadastrado)                     |
+| Clínica Exemplo          | Conversas no WhatsApp e falha de atualização                       |
+| Imobiliária Demonstração | Cliente sem dados (estado vazio)                                   |
+
+Tudo que é simulado mostra o selo **Dados simulados** no topo.
