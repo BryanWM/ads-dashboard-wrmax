@@ -5,10 +5,8 @@ import { NavigationPendingProvider, PendingContent } from "@/components/layout/n
 import { Topbar } from "@/components/layout/topbar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { canAccessAdmin, isAgencyMember, toViewerView } from "@/lib/domain/access";
-import { getViewer } from "@/server/auth/session";
-import { DATA_ORIGIN, getDataSource } from "@/server/data/source";
-
-const simulated = DATA_ORIGIN === "simulated";
+import { getViewer, isDemoMode } from "@/server/auth/session";
+import { getDataSource } from "@/server/data/source";
 
 async function SidebarLoader() {
   const viewer = await getViewer();
@@ -18,14 +16,15 @@ async function SidebarLoader() {
       clients={clients}
       viewer={toViewerView(viewer)}
       showAdmin={canAccessAdmin(viewer)}
-      demo={simulated}
+      demo={isDemoMode()}
     />
   );
 }
 
 async function TopbarLoader() {
   const viewer = await getViewer();
-  return <Topbar simulated={simulated} clientView={!isAgencyMember(viewer)} />;
+  const simulated = await getDataSource(viewer).hasSimulatedData();
+  return <Topbar simulated={simulated} clientView={!isAgencyMember(viewer)} demo={isDemoMode()} />;
 }
 
 /**

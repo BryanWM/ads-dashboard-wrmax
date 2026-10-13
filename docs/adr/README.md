@@ -71,6 +71,20 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   houver equipe com acesso parcial ou um usuário com vários negócios, volta-se a uma
   tabela de vínculo — mudança de schema, não de telas.
 
+## ADR-010 — Modo Supabase × modo demonstração e um único read model
+
+- **Contexto**: o app precisa funcionar com o banco real (Fase 5) sem perder a demonstração
+  offline usada para revisar telas, e as regras de métricas não podem ser duplicadas.
+- **Decisão**: com `NEXT_PUBLIC_SUPABASE_URL` + chave publicável o app entra em **modo
+  Supabase** (login real, `proxy.ts` renova a sessão, leituras com o JWT do usuário). Sem
+  elas, **modo demonstração** (simulação em memória e troca agência/cliente por cookie).
+  As duas origens só carregam linhas; `src/lib/read-model` aplica as regras de métricas
+  uma vez. Dados de demonstração no banco são gravados pelo `pnpm db:seed` com
+  `source = 'simulated'`, o que mantém o selo "Dados simulados".
+- **Consequências**: o alcance de um cliente com várias contas aparece como indisponível
+  (a Meta só deduplica dentro de uma conta). A troca "Visualizar como cliente" existe só
+  no modo demonstração; no modo Supabase a agência precisará de um login de cliente.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.

@@ -4,9 +4,9 @@ Plataforma SaaS para agências, gestores de tráfego e seus clientes acompanhare
 métricas de campanhas pagas (Meta Ads primeiro; Google Ads e TikTok Ads no roadmap),
 com sincronização automática diária.
 
-> **Status:** Fase 4 concluída — interface navegável com **dados simulados**
-> (login visual, painel, campanhas, administração). Ainda sem banco, autenticação real ou
-> integração com a Meta (Fases 5–7). Como usar: [guia de uso](docs/guia-de-uso.md).
+> **Status:** Fase 5 em andamento — banco Supabase com isolamento (RLS), login real e
+> telas lendo do banco (dados de demonstração). Ainda sem integração com a Meta (Fases 6–7).
+> Como usar: [guia de uso](docs/guia-de-uso.md).
 
 ## Stack
 
@@ -23,11 +23,12 @@ cp .env.example .env.local   # preencha conforme a fase
 pnpm dev
 ```
 
-| Script        | O que faz                           |
-| ------------- | ----------------------------------- |
-| `pnpm dev`    | servidor de desenvolvimento         |
-| `pnpm check`  | lint + typecheck + testes unitários |
-| `pnpm format` | Prettier                            |
+| Script         | O que faz                                         |
+| -------------- | ------------------------------------------------- |
+| `pnpm dev`     | servidor de desenvolvimento                       |
+| `pnpm check`   | lint + typecheck + testes unitários               |
+| `pnpm db:seed` | agência, administrador e demonstração no Supabase |
+| `pnpm format`  | Prettier                                          |
 
 ## Documentação
 

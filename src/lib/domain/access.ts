@@ -9,6 +9,8 @@ export interface Viewer {
   name: string;
   email: string;
   role: MembershipRole;
+  /** The agency this person belongs to; null = signed in but not linked to any. */
+  organizationId: string | null;
   /** The single client a client user belongs to; null for the agency admin. */
   clientId: string | null;
 }
@@ -23,7 +25,7 @@ export interface ViewerView {
 }
 
 export function isAgencyMember(viewer: Viewer): boolean {
-  return viewer.role === "admin";
+  return viewer.role === "admin" && viewer.organizationId !== null;
 }
 
 /** Admin area (integrations, accounts, access, audit): agency only. */

@@ -16,7 +16,13 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
 ## Comandos
 
 - `pnpm dev` · `pnpm build` · `pnpm check` (lint + typecheck + unit)
+- `pnpm db:seed --admin-email <e-mail>`: agência + administrador + dados de demonstração
+  (usa `SUPABASE_SECRET_KEY` do `.env.local`; nunca imprima valores do `.env.local`).
 - Sem testes E2E (Playwright removido a pedido do usuário); valide telas no navegador.
+- Banco: migrações em `supabase/migrations` são aplicadas pelo usuário no SQL Editor (sem
+  CLI). Antes de entregar uma migração, valide no PGlite com `supabase/tests/rls_isolation.sql`.
+- Modo Supabase (env presente) × modo demonstração (sem env): ADR-010. Com Supabase, o
+  login real passa pela internet — não faça login no lugar do usuário; peça que ele teste.
 
 ## Next.js 16.4 — regras que diferem do conhecimento antigo
 
@@ -45,7 +51,8 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
   não zero; alcance não é aditivo; não misture moedas nem tipos de resultado.
 - **Comparações** usam `comparableRanges` (dia a dia quando o período está incompleto).
 - **Leitura de dados**: páginas usam `getDataSource()` (`src/server/data/source.ts`) e
-  `resolveClientContext()`; nunca consultam a origem diretamente. O `?client=` da URL só
+  `resolveClientContext()`; nunca consultam a origem diretamente. Regras de métricas ficam
+  em `src/lib/read-model` (compartilhado pelas origens simulada e Supabase). O `?client=` da URL só
   é aceito se estiver na lista de clientes visíveis do usuário.
 - **Dados simulados** sempre exibem o badge "Dados simulados".
 - **Identidade visual = WRMax Design System** (artefato

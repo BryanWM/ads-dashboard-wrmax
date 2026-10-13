@@ -27,11 +27,12 @@ function SectionTitle({ clientView }: { clientView: boolean }) {
 
 interface TopbarProps {
   simulated: boolean;
-  /** Demo only: makes it obvious the client experience is being previewed. */
   clientView: boolean;
+  /** Demo mode: the chip makes it obvious the client experience is being previewed. */
+  demo: boolean;
 }
 
-export function Topbar({ simulated, clientView }: TopbarProps) {
+export function Topbar({ simulated, clientView, demo }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-linha surface-glass px-3 sm:px-4 md:rounded-t-2xl">
       {/* 44px touch target on phones (WCAG / brief), compact on desktop. */}
@@ -40,7 +41,7 @@ export function Topbar({ simulated, clientView }: TopbarProps) {
       <div className="min-w-0 flex-1">
         <SectionTitle clientView={clientView} />
       </div>
-      {clientView && simulated ? (
+      {clientView && demo ? (
         <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-chip chip-ouro px-2.5 text-xs font-semibold">
           <EyeIcon className="size-3.5" aria-hidden />
           <span className="hidden sm:inline">Visão do cliente</span>

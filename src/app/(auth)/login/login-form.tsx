@@ -1,50 +1,26 @@
 "use client";
 
-import { FlaskConicalIcon, InfoIcon } from "lucide-react";
+import { FlaskConicalIcon } from "lucide-react";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
-import { z } from "zod";
+import { useActionState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-
-const schema = z.object({
-  email: z.email("Informe um e-mail válido."),
-  password: z.string().min(8, "A senha tem pelo menos 8 caracteres."),
-});
-
-type Errors = Partial<Record<"email" | "password", string>>;
+import { Spinner } from "@/components/ui/spinner";
+import { signIn, type SignInState } from "@/server/auth/sign-in";
 
 /**
- * Phase 4: client-side validation only. Credentials are never sent anywhere —
- * Supabase Auth (server-side, Phase 5) replaces the notice below.
+ * Supabase mode: e-mail + password checked on the server (Server Action).
+ * Demo mode: only the "explore" button works; the form explains why.
  */
-export function LoginForm() {
-  const [errors, setErrors] = useState<Errors>({});
-  const [notice, setNotice] = useState(false);
-
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const parsed = schema.safeParse({ email: form.get("email"), password: form.get("password") });
-    if (!parsed.success) {
-      const next: Errors = {};
-      for (const issue of parsed.error.issues) {
-        const key = issue.path[0] as keyof Errors;
-        next[key] ??= issue.message;
-      }
-      setErrors(next);
-      setNotice(false);
-      return;
-    }
-    setErrors({});
-    setNotice(true);
-  }
+export function LoginForm({ demo }: { demo: boolean }) {
+  const [state, action, pending] = useActionState<SignInState, FormData>(signIn, {});
+  const errors = state.fieldErrors ?? {};
 
   return (
-    <form onSubmit={onSubmit} noValidate className="space-y-5">
+    <form action={action} noValidate className="space-y-5">
       <FieldGroup>
         <Field data-invalid={!!errors.email || undefined}>
           <FieldLabel htmlFor="email">E-mail</FieldLabel>
@@ -54,6 +30,8 @@ export function LoginForm() {
             type="email"
             autoComplete="email"
             placeholder="voce@empresa.com.br"
+            defaultValue={state.email}
+            disabled={demo}
             aria-invalid={!!errors.email || undefined}
             aria-describedby={errors.email ? "email-error" : undefined}
           />
@@ -66,6 +44,7 @@ export function LoginForm() {
             name="password"
             type="password"
             autoComplete="current-password"
+            disabled={demo}
             aria-invalid={!!errors.password || undefined}
             aria-describedby={errors.password ? "password-error" : undefined}
           />
@@ -73,31 +52,29 @@ export function LoginForm() {
         </Field>
       </FieldGroup>
 
-      {notice ? (
-        <Alert role="status" className="border-linha bg-superficie-2">
-          <InfoIcon className="text-dourado" />
-          <AlertTitle>Login ainda não habilitado</AlertTitle>
-          <AlertDescription>
-            A autenticação será ativada junto com o backend (Fase 5). Nenhum dado foi enviado. Use o
-            modo demonstração para explorar a interface.
-          </AlertDescription>
+      {state.formError ? (
+        <Alert role="alert" className="border-linha bg-superficie-2">
+          <AlertDescription>{state.formError}</AlertDescription>
         </Alert>
       ) : null}
 
       <div className="space-y-2.5">
-        <Button type="submit" size="lg" className="w-full">
-          Entrar
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full"
-          render={<Link href="/dashboard" />}
-          nativeButton={false}
-        >
-          <FlaskConicalIcon data-icon="inline-start" />
-          Explorar com dados simulados
-        </Button>
+        {demo ? (
+          <Button
+            size="lg"
+            className="w-full"
+            render={<Link href="/dashboard" />}
+            nativeButton={false}
+          >
+            <FlaskConicalIcon data-icon="inline-start" />
+            Explorar com dados simulados
+          </Button>
+        ) : (
+          <Button type="submit" size="lg" className="w-full" disabled={pending}>
+            {pending ? <Spinner data-icon="inline-start" /> : null}
+            Entrar
+          </Button>
+        )}
       </div>
     </form>
   );

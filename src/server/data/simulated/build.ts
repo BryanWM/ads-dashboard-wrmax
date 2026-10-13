@@ -1,38 +1,28 @@
 /**
- * Pure builders for the SIMULATED read model (no `server-only` so they can be
- * unit-tested). They mimic the real pipeline's semantics: data stops at the last
- * successful sync, paused campaigns stop producing rows, reach exists only for
- * preset periods.
+ * SIMULATED rows (no `server-only` so they can be unit-tested and reused by the
+ * seed script). They mimic the real pipeline: data stops at the last successful
+ * sync, paused campaigns stop producing rows, reach exists only for preset periods.
+ * The metric rules themselves live in the shared read model (src/lib/read-model).
  */
 import { simulateDailySeries } from "@/lib/demo/simulated";
-import { comparableRanges } from "@/lib/dates/coverage";
 import type { PeriodSelection } from "@/lib/dates/period-params";
-import { addDays, rangeLength, type DateRange } from "@/lib/dates/periods";
-import type {
-  AdView,
-  CampaignRow,
-  CampaignsData,
-  ClientSummary,
-  DailyPoint,
-  DashboardData,
-  MetricsSnapshot,
-  SyncStatus,
-  TypedDay,
-} from "@/lib/domain/types";
+import { addDays, rangeLength } from "@/lib/dates/periods";
+import type { CampaignsData, ClientSummary, DashboardData, SyncStatus } from "@/lib/domain/types";
+import type { PeriodReach } from "@/lib/metrics/derive";
 import {
-  aggregateByResultType,
-  aggregateComponents,
-  deriveMetrics,
-  safeRatio,
-  type DailyComponents,
-  type PeriodReach,
-} from "@/lib/metrics/derive";
+  buildCampaignsData,
+  buildDashboardData,
+  type AdInput,
+  type ClientDataInput,
+  type DatedRow,
+} from "@/lib/read-model/build";
 
 import {
   SIM_CLIENTS,
   SIM_CURRENCY,
   SIM_EPOCH,
   SIM_TIMEZONE,
+  type SimAd,
   type SimCampaign,
   type SimClient,
 } from "./catalog";
@@ -42,8 +32,6 @@ export interface SimContext {
   today: string;
   now: Date;
 }
-
-type DatedRow = DailyComponents & { date: string };
 
 /** Daily sync runs at 06:12 in São Paulo (UTC−3, no DST). */
 function syncInstant(date: string): string {
@@ -78,7 +66,7 @@ export function syncStatusFor(client: SimClient, ctx: SimContext): SyncStatus {
 
 const seriesCache = new Map<string, DatedRow[]>();
 
-function campaignRows(campaign: SimCampaign, ctx: SimContext, dataThrough: string | null) {
+export function campaignRows(campaign: SimCampaign, ctx: SimContext, dataThrough: string | null) {
   if (dataThrough === null) return [];
   const key = `${campaign.id}:${ctx.today}:${dataThrough}`;
   const cached = seriesCache.get(key);
@@ -115,71 +103,35 @@ function campaignRows(campaign: SimCampaign, ctx: SimContext, dataThrough: strin
   return rows;
 }
 
-function inRange(rows: DatedRow[], range: DateRange) {
-  return rows.filter((r) => r.date >= range.from && r.date <= range.to);
+function round(n: number | null | undefined, digits: number): number | null {
+  if (n === null || n === undefined) return null;
+  const f = 10 ** digits;
+  return Math.round(n * f) / f;
 }
 
-function toComponents(rows: readonly DailyComponents[]): DailyComponents {
-  const a = aggregateComponents(rows);
-  return {
-    spend: a.spend,
-    impressions: a.impressions,
-    linkClicks: a.linkClicks,
-    results: a.results,
-    resultIndicator: a.resultIndicator,
-    purchaseValue: a.purchaseValue,
-    addToCart: a.addToCart,
-    initiateCheckout: a.initiateCheckout,
-  };
-}
-
-function byType(rows: readonly DailyComponents[]): Record<string, TypedDay> {
-  return Object.fromEntries(
-    aggregateByResultType(rows).map((t) => [
-      t.resultIndicator,
-      { spend: t.spend, results: t.results, purchaseValue: t.purchaseValue },
-    ]),
-  );
-}
-
-/** Ad-level demo: each ad takes a share of its campaign's spend and results. */
-function buildAds(client: SimClient, current: Map<string, DatedRow[]>): AdView[] | null {
-  const campaigns = allCampaigns(client).filter((c) => c.ads?.length);
-  if (campaigns.length === 0) return null;
-  return campaigns.flatMap((c) => {
-    const totals = aggregateComponents(current.get(c.id) ?? []);
-    return (c.ads ?? []).map((ad) => {
-      const spend = totals.spend === null ? null : round2(totals.spend * ad.spendShare);
-      const results = totals.results === null ? null : Math.round(totals.results * ad.resultShare);
-      return {
-        id: ad.id,
-        name: ad.name,
-        campaignName: c.name,
-        thumbnailUrl: ad.thumbnailUrl,
-        resultIndicator: c.resultIndicator,
-        spend,
-        results,
-        costPerResult: safeRatio(spend, results),
-      };
-    });
-  });
-}
-
-function round2(n: number) {
-  return Math.round(n * 100) / 100;
+/** Ad-level demo: each ad takes a fixed share of its campaign's daily numbers. */
+export function adRows(rows: readonly DatedRow[], ad: SimAd): DatedRow[] {
+  return rows.map((r) => ({
+    date: r.date,
+    spend: round(r.spend === null ? null : r.spend * ad.spendShare, 2),
+    impressions: r.impressions === null ? null : Math.round(r.impressions * ad.spendShare),
+    linkClicks: r.linkClicks === null ? null : Math.round(r.linkClicks * ad.spendShare),
+    results: round(r.results === null ? null : r.results * ad.resultShare, 4),
+    resultIndicator: r.resultIndicator,
+    purchaseValue: round(
+      r.purchaseValue === null || r.purchaseValue === undefined
+        ? null
+        : r.purchaseValue * ad.resultShare,
+      2,
+    ),
+  }));
 }
 
 /** Stand-in for Meta's deduplicated reach: frequency grows with period length. */
-function simulatedReach(impressions: number | null, days: number): PeriodReach {
+export function simulatedReach(impressions: number | null, days: number): PeriodReach {
   if (impressions === null) return { reach: null, impressions: null };
   const frequency = Math.min(1.15 + 0.045 * days, 3.8);
   return { reach: Math.round(impressions / frequency), impressions };
-}
-
-function snapshot(rows: DatedRow[], range: DateRange, withReach: boolean): MetricsSnapshot {
-  const totals = aggregateComponents(rows);
-  const reach = withReach ? simulatedReach(totals.impressions, rangeLength(range)) : null;
-  return { metrics: deriveMetrics(totals, reach), resultTypes: aggregateByResultType(rows) };
 }
 
 export function clientSummary(client: SimClient): ClientSummary {
@@ -198,8 +150,43 @@ export function findClient(clientId: string) {
   return SIM_CLIENTS.find((c) => c.id === clientId) ?? null;
 }
 
-function allCampaigns(client: SimClient) {
+export function allCampaigns(client: SimClient) {
   return client.accounts.flatMap((a) => a.campaigns);
+}
+
+function simulatedInput(client: SimClient, ctx: SimContext): ClientDataInput {
+  const sync = syncStatusFor(client, ctx);
+  const campaigns = allCampaigns(client).map((c) => ({
+    id: c.id,
+    name: c.name,
+    status: c.status,
+    objectiveLabel: c.objectiveLabel,
+    resultIndicator: c.resultIndicator,
+    rows: campaignRows(c, ctx, sync.dataThrough),
+  }));
+  const withAds = allCampaigns(client).filter((c) => c.ads?.length);
+  const ads: AdInput[] | null =
+    withAds.length === 0
+      ? null
+      : withAds.flatMap((c) =>
+          (c.ads ?? []).map((ad) => ({
+            id: ad.id,
+            name: ad.name,
+            campaignName: c.name,
+            thumbnailUrl: ad.thumbnailUrl,
+            resultIndicator: c.resultIndicator,
+            rows: adRows(campaignRows(c, ctx, sync.dataThrough), ad),
+          })),
+        );
+
+  return {
+    origin: "simulated",
+    client: clientSummary(client),
+    sync,
+    campaigns,
+    ads,
+    reachFor: (range, impressions) => simulatedReach(impressions, rangeLength(range)),
+  };
 }
 
 export function buildDashboard(
@@ -207,56 +194,7 @@ export function buildDashboard(
   selection: PeriodSelection,
   ctx: SimContext,
 ): DashboardData {
-  const sync = syncStatusFor(client, ctx);
-  const cover = comparableRanges(selection.range, selection.previous, sync.dataThrough);
-  const campaigns = allCampaigns(client);
-  const perCampaign = campaigns.map((c) => campaignRows(c, ctx, sync.dataThrough));
-  const currentByCampaign = new Map(
-    campaigns.map((c, i) => [c.id, inRange(perCampaign[i] ?? [], selection.range)]),
-  );
-  const all = perCampaign.flat();
-  const current = inRange(all, selection.range);
-  const previous = inRange(all, cover.comparison);
-  const reachAvailable = selection.preset !== null;
-
-  const byDate = new Map<string, DatedRow[]>();
-  // The chart shows the whole previous period day by day; only totals are trimmed.
-  for (const row of [...current, ...inRange(all, selection.previous)]) {
-    const list = byDate.get(row.date) ?? [];
-    list.push(row);
-    byDate.set(row.date, list);
-  }
-  const dayRows = (date: string) => {
-    const rows = byDate.get(date);
-    return rows && rows.length > 0 ? toComponents(rows) : null;
-  };
-
-  const daily: DailyPoint[] = Array.from({ length: rangeLength(selection.range) }, (_, i) => {
-    const date = addDays(selection.range.from, i);
-    const previousDate = addDays(selection.previous.from, i);
-    return {
-      date,
-      current: dayRows(date),
-      previous: dayRows(previousDate),
-      currentByType: byType(byDate.get(date) ?? []),
-      previousByType: byType(byDate.get(previousDate) ?? []),
-    };
-  });
-
-  return {
-    origin: "simulated",
-    client: clientSummary(client),
-    range: selection.range,
-    previousRange: selection.previous,
-    comparisonRange: cover.comparison,
-    partial: cover.partial,
-    current: snapshot(current, cover.covered ?? selection.range, reachAvailable),
-    previous: snapshot(previous, cover.comparison, reachAvailable),
-    daily,
-    reachAvailable,
-    ads: buildAds(client, currentByCampaign),
-    sync,
-  };
+  return buildDashboardData(simulatedInput(client, ctx), selection);
 }
 
 export function buildCampaigns(
@@ -264,31 +202,5 @@ export function buildCampaigns(
   selection: PeriodSelection,
   ctx: SimContext,
 ): CampaignsData {
-  const sync = syncStatusFor(client, ctx);
-  const cover = comparableRanges(selection.range, selection.previous, sync.dataThrough);
-  const campaigns: CampaignRow[] = allCampaigns(client).map((c) => {
-    const rows = campaignRows(c, ctx, sync.dataThrough);
-    const current = inRange(rows, selection.range);
-    const components = toComponents(current);
-    return {
-      id: c.id,
-      name: c.name,
-      status: c.status,
-      objectiveLabel: c.objectiveLabel,
-      resultIndicator: c.resultIndicator,
-      components,
-      metrics: deriveMetrics(aggregateComponents(current)),
-      previousMetrics: deriveMetrics(aggregateComponents(inRange(rows, cover.comparison))),
-    };
-  });
-
-  return {
-    origin: "simulated",
-    client: clientSummary(client),
-    range: selection.range,
-    comparisonRange: cover.comparison,
-    partial: cover.partial,
-    campaigns,
-    sync,
-  };
+  return buildCampaignsData(simulatedInput(client, ctx), selection);
 }

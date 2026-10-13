@@ -79,14 +79,29 @@ vira uma lista de cartões.
 seletor — só o nome do próprio negócio. O cliente e o
 período escolhidos acompanham a navegação entre as telas.
 
-## Como explorar hoje (modo demonstração)
+## Como usar hoje
 
-1. Rode `pnpm dev` e abra `http://localhost:3000` (ou a porta configurada).
-2. Na tela de login, clique em **Explorar com dados simulados**. O formulário de e-mail
-   e senha ainda não envia nada (chega na Fase 5).
-3. Você entra como **Ana Administradora** (agência): vê todos os clientes e a
-   Administração.
-4. Para ver o que o cliente vê: menu do usuário (rodapé do menu lateral) →
+### Com o Supabase (login real)
+
+Uma vez só:
+
+1. Aplique as migrações de `supabase/migrations` no **SQL Editor** (ver
+   `docs/data-model.md`).
+2. Crie o seu usuário em **Supabase → Authentication → Users → Add user → Create new
+   user** (e-mail + senha, marque **Auto Confirm User**). A senha fica só com você.
+3. No terminal: `pnpm db:seed --admin-email seu@email.com`. Isso cria a agência, liga você
+   como administrador e carrega os clientes de demonstração (com o selo "Dados simulados").
+
+Depois: `pnpm dev`, abra o endereço e entre com o seu e-mail e senha. Para atualizar a
+demonstração até ontem, rode o `pnpm db:seed` de novo (não duplica nada).
+
+### Sem o Supabase (modo demonstração)
+
+Se o `.env.local` não tiver as chaves do Supabase, o app roda só com a simulação:
+
+1. Rode `pnpm dev` e, na tela de login, clique em **Explorar com dados simulados**.
+2. Você entra como **Ana Administradora** (agência).
+3. Para ver o que o cliente vê: menu do usuário (rodapé do menu lateral) →
    **Visualizar como cliente**. Você vira **Carla (Auto Center)**, que só enxerga o Auto
    Center Modelo. Para voltar: **Voltar para a visão da agência**.
 

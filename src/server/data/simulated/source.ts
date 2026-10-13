@@ -45,5 +45,9 @@ export function createSimulatedSource(viewer: Viewer): MetricsDataSource {
     async getAdminOverview() {
       return canAccessAdmin(viewer) ? buildAdminOverview(context()) : null;
     },
+
+    async hasSimulatedData() {
+      return true;
+    },
   };
 }

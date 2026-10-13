@@ -7,6 +7,7 @@ const admin: Viewer = {
   name: "Ana",
   email: "a@example.com",
   role: "admin",
+  organizationId: "org-1",
   clientId: null,
 };
 const client: Viewer = {
@@ -14,6 +15,7 @@ const client: Viewer = {
   name: "Carla",
   email: "c@example.com",
   role: "client",
+  organizationId: "org-1",
   clientId: "c-auto",
 };
 const clients = [{ id: "c-auto" }, { id: "c-clinica" }, { id: "c-imob" }];
@@ -37,5 +39,11 @@ describe("access rules", () => {
   it("reserves the admin area for the agency", () => {
     expect(canAccessAdmin(admin)).toBe(true);
     expect(canAccessAdmin(client)).toBe(false);
+  });
+
+  it("gives nothing to a signed-in person without an organisation", () => {
+    const unlinked = { ...admin, organizationId: null };
+    expect(canAccessAdmin(unlinked)).toBe(false);
+    expect(visibleClients(unlinked, clients)).toEqual([]);
   });
 });

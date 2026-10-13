@@ -28,6 +28,8 @@ function initials(name: string) {
     .join("");
 }
 
+const SIGN_OUT_FORM = "sign-out-form";
+
 export function UserMenu({ viewer, demo }: { viewer: ViewerView; demo: boolean }) {
   const [isPending, startTransition] = useTransition();
 
@@ -86,13 +88,22 @@ export function UserMenu({ viewer, demo }: { viewer: ViewerView; demo: boolean }
               </>
             ) : null}
             <DropdownMenuSeparator />
-            {/* Full navigation on logout so <Activity> does not keep this user's UI alive. */}
-            <DropdownMenuItem render={<a href="/login" />}>
+            {/*
+              Native POST + 303 = full navigation, so <Activity> does not keep this
+              person's screens alive after signing out.
+            */}
+            <DropdownMenuItem
+              onClick={() => {
+                const form = document.getElementById(SIGN_OUT_FORM) as HTMLFormElement | null;
+                form?.requestSubmit();
+              }}
+            >
               <LogOutIcon />
               Sair
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <form id={SIGN_OUT_FORM} method="post" action="/auth/sign-out" hidden />
       </SidebarMenuItem>
     </SidebarMenu>
   );
