@@ -23,6 +23,10 @@
 
 ## Fases
 
+Situação (13/10/2026): Fases 1–5 concluídas. Fase 5 validada pelo usuário no Supabase:
+teste de isolamento OK, login real, cadastro de clientes, associação de contas e login de
+cliente por link de uso único. Próxima: Fase 6.
+
 | Fase                 | Entregas                                                                                                | Critério de pronto                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | 1. Descoberta        | `docs/` (arquitetura, modelo, Meta, HyperFrames, design)                                                | Documentos revisados pelo usuário                       |

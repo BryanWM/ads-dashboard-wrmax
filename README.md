@@ -4,8 +4,9 @@ Plataforma SaaS para agências, gestores de tráfego e seus clientes acompanhare
 métricas de campanhas pagas (Meta Ads primeiro; Google Ads e TikTok Ads no roadmap),
 com sincronização automática diária.
 
-> **Status:** Fase 5 em andamento — banco Supabase com isolamento (RLS), login real e
-> telas lendo do banco (dados de demonstração). Ainda sem integração com a Meta (Fases 6–7).
+> **Status:** Fase 5 concluída — banco Supabase com isolamento (RLS), login real,
+> administração de clientes/contas/acessos e telas lendo do banco (dados de demonstração).
+> Próximo: integração com a Meta (Fases 6–7).
 > Como usar: [guia de uso](docs/guia-de-uso.md).
 
 ## Stack
