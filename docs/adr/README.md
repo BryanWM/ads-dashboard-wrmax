@@ -99,6 +99,19 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   mesma `TOKEN_ENCRYPTION_KEY` precisa existir em todo ambiente que usa o mesmo banco. A
   regra de resultado é conferida com o Gerenciador de Anúncios antes de fechar a Fase 6.
 
+## ADR-012 — Ambientes separados: desenvolvimento local × produção
+
+- **Contexto**: o desenvolvimento acontece num computador pessoal. Com um só projeto
+  Supabase, o `.env.local` guardava a service role e a chave de criptografia da produção.
+- **Decisão**: dois projetos Supabase. O local usa `wrmax-metrics-dev` (só dados de
+  demonstração, chave de criptografia própria, sem `META_APP_SECRET` nem token real). As
+  chaves de produção existem só na Vercel (Secret) e no gerenciador de senhas da empresa.
+  O token da Meta é colado apenas no site de produção.
+- **Consequências**: cada migração é aplicada nos dois projetos (dev primeiro). A primeira
+  sincronização real acontece em produção; diagnóstico pelos logs da Vercel (sem tokens).
+  Ao trocar de pessoa ou de máquina: girar a secret key do Supabase, a chave de
+  criptografia (reconectar a Meta) e o token do usuário do sistema.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.

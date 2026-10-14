@@ -20,7 +20,10 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
   (usa `SUPABASE_SECRET_KEY` do `.env.local`; nunca imprima valores do `.env.local`).
 - Sem testes E2E (Playwright removido a pedido do usuário); valide telas no navegador.
 - Banco: migrações em `supabase/migrations` são aplicadas pelo usuário no SQL Editor (sem
-  CLI). Antes de entregar uma migração, valide no PGlite com `supabase/tests/rls_isolation.sql`.
+  CLI), primeiro no projeto **dev** e depois no de produção (ADR-012). Antes de entregar
+  uma migração, valide no PGlite com `supabase/tests/rls_isolation.sql`.
+- O `.env.local` aponta para o projeto Supabase de **desenvolvimento**; chaves de produção e
+  o token da Meta nunca ficam na máquina local.
 - Modo Supabase (env presente) × modo demonstração (sem env): ADR-010. Com Supabase, o
   login real passa pela internet — não faça login no lugar do usuário; peça que ele teste.
 
