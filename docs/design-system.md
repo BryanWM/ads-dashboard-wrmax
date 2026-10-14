@@ -28,9 +28,26 @@ Tailwind) para `src/components/ui/`, e cada primitiva foi ajustada aos tokens WR
 | `ouro`, `ouro-escuro`, `ouro-claro`         | `chip-ouro`, `bg-ouro`, `text-ouro` | gradiente e item ativo                        |
 | `ok` / `atencao` / `erro`                   | `StatusDot`                         | status: ponto + texto neutro                  |
 
-- **Tema único escuro.** O design system não define tema claro, então nenhum foi
-  inventado: `<html class="dark">` é fixo e o `next-themes` foi removido. (O requisito
-  original pedia claro/escuro; um tema claro precisa ser definido primeiro no design system.)
+- **Temas escuro (padrão) e claro** (ADR-013, paleta aprovada em 14/10/2026). O claro troca
+  só os valores dos tokens; os papéis são os mesmos. Escolha em menu do usuário → Tema
+  (Automático segue o aparelho).
+
+  | Token                        | Escuro                            | Claro                             | Contraste no claro (fundo/card) |
+  | ---------------------------- | --------------------------------- | --------------------------------- | ------------------------------- |
+  | `fundo`                      | `#0a0907`                         | `#f6f1e6`                         | —                               |
+  | `superficie`                 | `#15130e`                         | `#fdfaf3`                         | —                               |
+  | `superficie-2`               | `#1d1a13`                         | `#f1eadb`                         | —                               |
+  | `texto`                      | `#f1e8d6`                         | `#1d1912`                         | 15,5 / 16,8                     |
+  | `texto-apagado`              | `#ac9f84`                         | `#5c5242`                         | 6,8 / 7,4                       |
+  | `texto-inativo`              | `#8c836f`                         | `#6f6553`                         | 5,1 / 5,5                       |
+  | `dourado`                    | `#d4b06a`                         | `#8a6420`                         | 4,8 / 5,1                       |
+  | `ok` / `atencao` / `erro`    | `#6fd39b` / `#e7b45a` / `#ff6b8a` | `#17744a` / `#8f5c06` / `#b8304f` | ≥ 5,0                           |
+  | `chart-1` / `chart-previous` | `#d4b06a` / `#6f6756`             | `#b07f22` / `#6b6457`             | 3,2 / 5,2                       |
+
+  No claro, o período anterior é um cinza **mais escuro** que o dourado (um cinza claro
+  some no creme): validado com o `validate_palette.js` — CVD ΔE 14,0, normal ΔE 15,8, ambos
+  ≥ 3:1 no card. O botão principal usa os ouros fixos da marca nos dois temas.
+
 - **Fundo**: brilho dourado difuso no canto superior direito + rede de pontos sutil (24 px).
 - **Raios**: `--radius: 10px` alinha a escala do Tailwind ao DS — `rounded-lg` = 10 px
   (`raio-botao`), `rounded-xl` = 14 px (`raio-card`), `rounded-2xl` = 18 px

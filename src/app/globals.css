@@ -4,9 +4,10 @@
 
 /*
  * WRMax Design System — https://claude.ai/artifact/FW7MMTqZpiYH5GFy6WtYvt
- * "Premium escuro com ouro como detalhe." Single dark theme: the DS defines no
- * light theme, so none is invented here. `<html class="dark">` is static so
- * shadcn's `dark:` variants apply.
+ * "Premium escuro com ouro como detalhe." Dark is the default; the light theme
+ * (approved 2026-10-14, ADR-013) applies with <html data-theme="light">, set before
+ * first paint by the inline script in the root layout. That script also toggles the
+ * `dark` class, so shadcn's `dark:` variants follow the theme.
  */
 @custom-variant dark (&:is(.dark *));
 
@@ -82,9 +83,9 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --radius-chip: 9px;
   --shadow-ouro: 0 8px 24px -8px rgba(201, 151, 58, 0.45);
-  --shadow-levantado: 0 22px 44px -12px rgba(0, 0, 0, 0.7);
+  --shadow-levantado: var(--sombra-flutuante);
   --shadow-surface: none;
-  --shadow-floating: 0 22px 44px -12px rgba(0, 0, 0, 0.7);
+  --shadow-floating: var(--sombra-flutuante);
   --ease-mac: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -110,6 +111,17 @@
   --ok: #6fd39b;
   --atencao: #e7b45a;
   --erro: #ff6b8a;
+
+  /* Theme-dependent accents (gold glass, text on gold glass, chrome, scrim). */
+  --ouro-rgb: 232 199 122;
+  --ouro-texto: var(--ouro);
+  --texto-ouro-a: var(--ouro-escuro);
+  --texto-ouro-b: var(--ouro-claro);
+  --brilho-fundo: rgba(201, 151, 58, 0.14);
+  --grade-fundo: rgba(232, 199, 122, 0.05);
+  --scrim: rgba(4, 3, 2, 0.72);
+  --sombra-flutuante: 0 22px 44px -12px rgba(0, 0, 0, 0.7);
+  --logo-filtro: none;
 
   /* shadcn roles mapped onto WRMax tokens */
   --background: var(--fundo);
@@ -146,17 +158,58 @@
   --chart-6: #e66767;
   --chart-7: #008300;
   --chart-8: #d95926;
-  --chart-grid: rgba(232, 199, 122, 0.07);
+  --chart-grid: rgb(var(--ouro-rgb) / 0.07);
   --chart-axis: var(--linha-2);
 
   --sidebar: rgba(10, 9, 7, 0.6);
   --sidebar-foreground: var(--texto-apagado);
   --sidebar-primary: var(--dourado);
   --sidebar-primary-foreground: var(--texto-sobre-ouro);
-  --sidebar-accent: rgba(232, 199, 122, 0.06);
+  --sidebar-accent: rgb(var(--ouro-rgb) / 0.06);
   --sidebar-accent-foreground: var(--texto);
   --sidebar-border: var(--linha);
   --sidebar-ring: var(--dourado);
+}
+
+/*
+ * Light theme (ADR-013). Same roles, cream surfaces, near-black text, a darker gold
+ * for text and focus. Contrast measured on fundo, card and superficie-2: text ≥ 4.5:1;
+ * chart pair validated with the dataviz validator (CVD ΔE 14.0, normal ΔE 15.8, both
+ * ≥ 3:1 on the card). Brand golds (--ouro, --ouro-escuro, --ouro-claro) do not change.
+ */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --fundo: #f6f1e6;
+  --superficie: #fdfaf3;
+  --superficie-2: #f1eadb;
+  --campo: #fbf7ee;
+  --texto: #1d1912;
+  --texto-apagado: #5c5242;
+  --texto-inativo: #6f6553;
+  --linha: rgba(138, 100, 32, 0.16);
+  --linha-2: rgba(138, 100, 32, 0.3);
+  --dourado: #8a6420;
+  --ok: #17744a;
+  --atencao: #8f5c06;
+  --erro: #b8304f;
+
+  --ouro-rgb: 176 127 34;
+  --ouro-texto: #8a6420;
+  --texto-ouro-a: #6e4f15;
+  --texto-ouro-b: #b07f22;
+  --brilho-fundo: rgba(201, 151, 58, 0.12);
+  --grade-fundo: rgba(138, 100, 32, 0.07);
+  --scrim: rgba(29, 25, 18, 0.4);
+  --sombra-flutuante: 0 18px 36px -14px rgba(60, 44, 14, 0.28);
+  /* The official wordmark is white: render it near-black on cream. */
+  --logo-filtro: brightness(0) saturate(100%) opacity(0.88);
+
+  --chart-1: #b07f22;
+  --chart-previous: #6b6457;
+  --chart-grid: rgb(var(--ouro-rgb) / 0.1);
+
+  --sidebar: rgba(246, 241, 230, 0.72);
 }
 
 @layer base {
@@ -172,8 +225,8 @@
     /* Diffuse gold glow in one corner + a very subtle dot grid (README: Cores). */
     background-color: var(--fundo);
     background-image:
-      radial-gradient(60rem 40rem at 100% 0%, rgba(201, 151, 58, 0.14), transparent 60%),
-      radial-gradient(rgba(232, 199, 122, 0.05) 1px, transparent 1px);
+      radial-gradient(60rem 40rem at 100% 0%, var(--brilho-fundo), transparent 60%),
+      radial-gradient(var(--grade-fundo) 1px, transparent 1px);
     background-size:
       100% 100%,
       24px 24px;
@@ -187,7 +240,7 @@
     font-family: var(--font-sora);
   }
   ::selection {
-    background: rgba(232, 199, 122, 0.25);
+    background: rgb(var(--ouro-rgb) / 0.25);
   }
 }
 
@@ -209,15 +262,19 @@
   text-transform: uppercase;
 }
 
-/* The gold gradient — only the primary button, ONE highlight word, progress bars. */
+/*
+ * The gold gradient — only the primary button, ONE highlight word, progress bars.
+ * Fixed brand golds (not the theme's --dourado) so dark text on it stays legible in
+ * both themes.
+ */
 @utility bg-ouro {
   background-image: linear-gradient(
     100deg,
-    var(--ouro-escuro) 0%,
-    var(--dourado) 30%,
-    var(--ouro-claro) 50%,
-    var(--dourado) 70%,
-    var(--ouro-escuro) 100%
+    #8a6420 0%,
+    #d4b06a 30%,
+    #f8e6b0 50%,
+    #d4b06a 70%,
+    #8a6420 100%
   );
   background-size: 200% 100%;
 }
@@ -225,9 +282,9 @@
 @utility text-ouro {
   background-image: linear-gradient(
     100deg,
-    var(--ouro-escuro),
-    var(--ouro-claro) 50%,
-    var(--ouro-escuro)
+    var(--texto-ouro-a),
+    var(--texto-ouro-b) 50%,
+    var(--texto-ouro-a)
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -236,9 +293,14 @@
 
 /* Active item / chip-ouro: gold glass, never full gold. */
 @utility chip-ouro {
-  background-color: rgba(232, 199, 122, 0.1);
-  border: 1px solid rgba(232, 199, 122, 0.35);
-  color: var(--ouro);
+  background-color: rgb(var(--ouro-rgb) / 0.1);
+  border: 1px solid rgb(var(--ouro-rgb) / 0.35);
+  color: var(--ouro-texto);
+}
+
+/* The official wordmark is white; the light theme darkens it (see --logo-filtro). */
+@utility logo-tema {
+  filter: var(--logo-filtro);
 }
 
 /* Translucent chrome (navbar, sidebar). Never on data surfaces. */

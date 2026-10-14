@@ -111,6 +111,20 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   de pessoa ou de máquina: girar a secret key do Supabase, a chave de criptografia
   (reconectar a Meta) e o token do usuário do sistema.
 
+## ADR-013 — Tema claro (substitui o "tema único escuro" do ADR-008)
+
+- **Contexto**: o usuário pediu troca de tema. O DS só definia o escuro; a paleta clara foi
+  proposta, medida e **aprovada em 14/10/2026**, e será registrada também no artefato do DS.
+- **Decisão**: escuro continua o padrão do servidor; `data-theme="light"` no `<html>` troca
+  os tokens (`globals.css`). Preferência "automático/claro/escuro" no `localStorage`
+  (`wrmax-tema`), aplicada por um script inline no `<head>` antes da primeira pintura (sem
+  cookie, sem tornar páginas dinâmicas). Escolha no menu do usuário. Tons de ouro
+  translúcidos usam `--ouro-rgb`; o gradiente do botão usa os ouros fixos da marca; o
+  logo branco é escurecido por filtro no claro.
+- **Consequências**: novas cores entram como token nos dois temas (nunca hex/rgba direto
+  em componentes). Pendências: logo escuro oficial; validar `--chart-2…8` no claro antes
+  de usar gráficos com 3+ séries.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.

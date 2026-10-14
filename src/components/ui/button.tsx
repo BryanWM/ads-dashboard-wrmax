@@ -13,9 +13,9 @@ const buttonVariants = cva(
           "bg-ouro text-texto-sobre-ouro shadow-ouro [transition-duration:400ms] hover:bg-[position:100%_0] disabled:bg-superficie-2 disabled:bg-none disabled:text-texto-apagado disabled:shadow-none",
         /** Secundário (vidro escuro). */
         outline:
-          "border-linha-2 bg-superficie text-texto hover:border-[rgba(232,199,122,0.5)] hover:bg-superficie-2 disabled:text-texto-inativo aria-expanded:bg-superficie-2",
+          "border-linha-2 bg-superficie text-texto hover:border-[rgb(var(--ouro-rgb)/0.5)] hover:bg-superficie-2 disabled:text-texto-inativo aria-expanded:bg-superficie-2",
         secondary:
-          "border-linha-2 bg-superficie text-texto hover:border-[rgba(232,199,122,0.5)] hover:bg-superficie-2 disabled:text-texto-inativo aria-expanded:bg-superficie-2",
+          "border-linha-2 bg-superficie text-texto hover:border-[rgb(var(--ouro-rgb)/0.5)] hover:bg-superficie-2 disabled:text-texto-inativo aria-expanded:bg-superficie-2",
         ghost:
           "text-texto-apagado hover:bg-superficie-2 hover:text-texto aria-expanded:bg-superficie-2 aria-expanded:text-texto",
         destructive: "border-erro/30 bg-erro/10 text-erro hover:bg-erro/15 disabled:opacity-50",

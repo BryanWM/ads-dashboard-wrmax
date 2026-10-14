@@ -31,7 +31,7 @@ export function WeekdayHeatmap({
               key={cell.index}
               title={`${cell.label}: ${formatMetricValue(cell.results, "integer")} · ${formatMetricValue(cell.costPerResult, "currency", { currency })} cada`}
               className="flex aspect-[3/4] flex-col items-center justify-center gap-1 rounded-lg text-center sm:aspect-auto sm:h-16"
-              style={{ backgroundColor: `rgba(212, 176, 106, ${0.06 + intensity * 0.5})` }}
+              style={{ backgroundColor: `rgb(var(--ouro-rgb) / ${0.06 + intensity * 0.5})` }}
             >
               <span className="text-xs text-texto-apagado">{cell.label}</span>
               <span className="font-display text-sm font-bold text-texto figures-tabular">

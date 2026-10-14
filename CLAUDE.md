@@ -60,8 +60,9 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
 - **Dados simulados** sempre exibem o badge "Dados simulados".
 - **Identidade visual = WRMax Design System** (artefato
   https://claude.ai/artifact/FW7MMTqZpiYH5GFy6WtYvt; aplicação em `docs/design-system.md`).
-  Tema único escuro; tokens WRMax como classes (`bg-superficie`, `text-texto-apagado`,
-  `border-linha`, `chip-ouro`, `bg-ouro`, `etiqueta`). **Um** botão de ouro (`Button`
+  Temas escuro (padrão) e claro (ADR-013): cores só por tokens WRMax como classes
+  (`bg-superficie`, `text-texto-apagado`, `border-linha`, `chip-ouro`, `bg-ouro`,
+  `etiqueta`) ou `rgb(var(--ouro-rgb)/α)` — nunca hex/rgba fixo em componentes. **Um** botão de ouro (`Button`
   padrão) por tela; secundário = `variant="outline"`. Status = `<StatusDot>` + texto
   neutro, nunca selo colorido. `dourado` nunca como fundo cheio. Branco puro nunca.
 - **Movimento**: curva `EASE_MAC` e presets de `src/components/motion`; **nada anima no

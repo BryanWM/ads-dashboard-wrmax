@@ -26,7 +26,7 @@ interface SegmentedControlProps<T extends string> {
 
 /** WRMax DS · pílula deslizante: gold glass indicator behind the active option. */
 export const PILL_CLASS =
-  "absolute inset-0 rounded-chip border border-[rgba(232,199,122,0.42)] bg-[linear-gradient(180deg,rgba(232,199,122,0.2),rgba(232,199,122,0.08))] shadow-[0_8px_24px_-8px_rgba(201,151,58,0.45),inset_0_1px_0_rgba(255,240,205,0.18)]";
+  "absolute inset-0 rounded-chip border border-[rgb(var(--ouro-rgb)/0.42)] bg-[linear-gradient(180deg,rgb(var(--ouro-rgb)/0.2),rgb(var(--ouro-rgb)/0.08))] shadow-[0_8px_24px_-8px_rgba(201,151,58,0.45),inset_0_1px_0_rgba(255,240,205,0.18)]";
 
 /**
  * Tabs/filters with the WRMax sliding pill (Animações §1). The pill moves with
@@ -49,7 +49,7 @@ export function SegmentedControl<T extends string>({
       role="group"
       aria-label={aria["aria-label"]}
       className={cn(
-        "relative max-w-full items-center gap-0.5 rounded-lg border border-linha bg-[rgba(10,9,7,0.6)] p-1",
+        "relative max-w-full items-center gap-0.5 rounded-lg border border-linha bg-campo/60 p-1",
         fill ? "flex w-full" : "inline-flex flex-wrap",
         className,
       )}

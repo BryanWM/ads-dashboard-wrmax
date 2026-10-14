@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { SimulatedDataBadge } from "@/components/feedback/simulated-data-badge";
 import { BrandLogo } from "@/components/layout/brand-logo";
+import { ThemeSwitch } from "@/components/theme/theme-switch";
 import { Separator } from "@/components/ui/separator";
 
 import { BottomNavDemo } from "./_components/bottom-nav-demo";
@@ -25,6 +26,7 @@ export default function DesignSystemPage() {
           <BrandLogo width={96} />
           <Separator orientation="vertical" className="h-4 bg-linha" />
           <span className="truncate etiqueta text-texto-apagado">Design system</span>
+          <ThemeSwitch className="ml-auto" />
         </div>
       </header>
 

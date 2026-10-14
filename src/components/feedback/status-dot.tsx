@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 export type StatusTone = "ok" | "atencao" | "erro" | "neutro";
 
 const TONE: Record<StatusTone, string> = {
-  ok: "bg-success shadow-[0_0_0_3px_rgba(111,211,155,0.14)]",
-  atencao: "bg-warning shadow-[0_0_0_3px_rgba(231,180,90,0.14)]",
-  erro: "bg-critical shadow-[0_0_0_3px_rgba(255,107,138,0.14)]",
+  ok: "bg-success shadow-[0_0_0_3px_color-mix(in_srgb,var(--ok)_14%,transparent)]",
+  atencao: "bg-warning shadow-[0_0_0_3px_color-mix(in_srgb,var(--atencao)_14%,transparent)]",
+  erro: "bg-critical shadow-[0_0_0_3px_color-mix(in_srgb,var(--erro)_14%,transparent)]",
   neutro: "bg-texto-inativo",
 };
 

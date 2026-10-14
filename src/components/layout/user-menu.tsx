@@ -1,6 +1,14 @@
 "use client";
 
-import { BriefcaseIcon, ChevronsUpDownIcon, EyeIcon, LogOutIcon } from "lucide-react";
+import {
+  BriefcaseIcon,
+  ChevronsUpDownIcon,
+  EyeIcon,
+  LogOutIcon,
+  MonitorSmartphoneIcon,
+  MoonIcon,
+  SunIcon,
+} from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
@@ -10,13 +18,44 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
+import { useTheme } from "@/hooks/use-theme";
 import type { ViewerView } from "@/lib/domain/access";
+import { parsePreference } from "@/lib/theme";
 import { switchDemoViewer } from "@/server/auth/actions";
+
+const THEME_OPTIONS = [
+  { value: "auto", label: "Automático", Icon: MonitorSmartphoneIcon },
+  { value: "claro", label: "Claro", Icon: SunIcon },
+  { value: "escuro", label: "Escuro", Icon: MoonIcon },
+] as const;
+
+/** Light/dark choice; "Automático" follows the device. */
+function ThemeOptions() {
+  const { preference, setPreference } = useTheme();
+  return (
+    <DropdownMenuGroup>
+      <DropdownMenuLabel className="text-xs">Tema</DropdownMenuLabel>
+      <DropdownMenuRadioGroup
+        value={preference}
+        onValueChange={(value) => setPreference(parsePreference(String(value)))}
+      >
+        {THEME_OPTIONS.map(({ value, label, Icon }) => (
+          <DropdownMenuRadioItem key={value} value={value} closeOnClick={false}>
+            <Icon />
+            {label}
+          </DropdownMenuRadioItem>
+        ))}
+      </DropdownMenuRadioGroup>
+    </DropdownMenuGroup>
+  );
+}
 
 function initials(name: string) {
   return name
@@ -87,6 +126,8 @@ export function UserMenu({ viewer, demo }: { viewer: ViewerView; demo: boolean }
                 </DropdownMenuGroup>
               </>
             ) : null}
+            <DropdownMenuSeparator />
+            <ThemeOptions />
             <DropdownMenuSeparator />
             {/*
               Native POST + 303 = full navigation, so <Activity> does not keep this
