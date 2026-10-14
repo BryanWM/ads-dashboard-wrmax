@@ -8,6 +8,7 @@ import {
   SyncFailureAlert,
   SyncStatusLine,
 } from "@/components/feedback/sync-status";
+import { AccountFilter } from "@/components/filters/account-filter";
 import { PeriodPicker } from "@/components/filters/period-picker";
 import { PageHeader } from "@/components/layout/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,11 +30,11 @@ export default function CampaignsPage({ searchParams }: PageProps<"/campaigns">)
 }
 
 async function Campaigns({ searchParams }: Pick<PageProps<"/campaigns">, "searchParams">) {
-  const { client, selection, today, source, viewer } = await resolveClientContext(
+  const { client, account, selection, today, source, viewer } = await resolveClientContext(
     await searchParams,
   );
   if (!client) return <NoClientsState />;
-  const data = await source.getCampaigns(client.id, selection);
+  const data = await source.getCampaigns(client.id, selection, account.accountId);
   if (!data) return <NoClientsState />;
   const audience = isAgencyMember(viewer) ? "agency" : "client";
 
@@ -47,13 +48,14 @@ async function Campaigns({ searchParams }: Pick<PageProps<"/campaigns">, "search
             <p>
               {client.name} · {formatDateRange(selection.range)}
             </p>
-            <SyncStatusLine sync={data.sync} timeZone={client.timezone} />
+            <SyncStatusLine sync={data.sync} timeZone={data.client.timezone} />
           </div>
         }
         actions={
           <>
             {/* Demo mode already badges the whole app in the top bar. */}
             {data.origin === "simulated" && !isDemoMode() ? <SimulatedDataBadge /> : null}
+            <AccountFilter accounts={client.accounts} scope={account} />
             <PeriodPicker preset={selection.preset} range={selection.range} today={today} />
           </>
         }
@@ -62,14 +64,14 @@ async function Campaigns({ searchParams }: Pick<PageProps<"/campaigns">, "search
         <NoAdAccountsState clientName={client.name} clientId={client.id} audience={audience} />
       ) : (
         <>
-          <SyncFailureAlert sync={data.sync} timeZone={client.timezone} audience={audience} />
+          <SyncFailureAlert sync={data.sync} timeZone={data.client.timezone} audience={audience} />
           <PartialPeriodNote
             partial={data.partial}
             compare={false}
             dataThrough={data.sync.dataThrough}
             comparisonRange={data.comparisonRange}
           />
-          <CampaignsTable campaigns={data.campaigns} currency={client.currency} />
+          <CampaignsTable campaigns={data.campaigns} currency={data.client.currency} />
         </>
       )}
     </div>

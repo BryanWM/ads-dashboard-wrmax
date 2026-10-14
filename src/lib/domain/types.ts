@@ -5,6 +5,8 @@
 import type { DateRange } from "@/lib/dates/periods";
 import type { DailyComponents, DerivedMetrics, ResultTypeBreakdown } from "@/lib/metrics/derive";
 
+import type { AdAccountRef } from "./account-scope";
+
 /** Where the numbers come from. Anything but "meta" must show the simulated badge. */
 export type DataOrigin = "simulated" | "meta";
 
@@ -19,6 +21,8 @@ export interface ClientSummary {
   /** IANA timezone of the client's ad accounts. */
   timezone: string;
   adAccountCount: number;
+  /** The client's ad accounts (for the account filter). */
+  accounts: AdAccountRef[];
   /** Declared by the agency. null → the result type with most spend is used. */
   objective: ClientObjective | null;
   /** Target cost per main result (account currency). null → no health badge. */

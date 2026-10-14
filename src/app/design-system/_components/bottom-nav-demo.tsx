@@ -19,7 +19,8 @@ const CLIENTS: ClientSummary[] = [
   name,
   currency: "BRL",
   timezone: "America/Sao_Paulo",
-  adAccountCount: 1,
+  adAccountCount: 0,
+  accounts: [],
   objective: null,
   costPerResultGoal: null,
 }));

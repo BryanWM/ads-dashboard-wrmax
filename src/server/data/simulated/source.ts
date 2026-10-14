@@ -11,6 +11,7 @@ import {
   buildDashboard,
   clientSummary,
   findClient,
+  ownsAccount,
   type SimContext,
 } from "./build";
 import { SIM_CLIENTS, SIM_TIMEZONE } from "./catalog";
@@ -32,14 +33,16 @@ export function createSimulatedSource(viewer: Viewer): MetricsDataSource {
       return visibleClients(viewer, SIM_CLIENTS).map(clientSummary);
     },
 
-    async getDashboard(clientId, selection) {
+    async getDashboard(clientId, selection, accountId = null) {
       const client = allowedClient(clientId);
-      return client ? buildDashboard(client, selection, context()) : null;
+      if (!client || !ownsAccount(client, accountId)) return null;
+      return buildDashboard(client, selection, context(), accountId);
     },
 
-    async getCampaigns(clientId, selection) {
+    async getCampaigns(clientId, selection, accountId = null) {
       const client = allowedClient(clientId);
-      return client ? buildCampaigns(client, selection, context()) : null;
+      if (!client || !ownsAccount(client, accountId)) return null;
+      return buildCampaigns(client, selection, context(), accountId);
     },
 
     async getAdminOverview() {

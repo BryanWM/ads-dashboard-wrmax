@@ -39,14 +39,21 @@ import {
 const FALLBACK_TIMEZONE = "America/Sao_Paulo";
 const FALLBACK_CURRENCY = "BRL";
 
-function summary(c: ClientRecord): ClientSummary {
-  const first = c.ad_accounts[0];
+/** Currency/timezone come from the selected account, else from the client's first one. */
+function summary(c: ClientRecord, accountId: string | null = null): ClientSummary {
+  const main = c.ad_accounts.find((a) => a.id === accountId) ?? c.ad_accounts[0];
   return {
     id: c.id,
     name: c.name,
-    currency: first?.currency ?? FALLBACK_CURRENCY,
-    timezone: first?.timezone_name ?? FALLBACK_TIMEZONE,
+    currency: main?.currency ?? FALLBACK_CURRENCY,
+    timezone: main?.timezone_name ?? FALLBACK_TIMEZONE,
     adAccountCount: c.ad_accounts.length,
+    accounts: c.ad_accounts.map((a) => ({
+      id: a.id,
+      name: a.name,
+      currency: a.currency,
+      timezone: a.timezone_name,
+    })),
     objective: c.objective,
     costPerResultGoal: num(c.cost_per_result_goal),
   };
@@ -79,25 +86,31 @@ export function createSupabaseSource(viewer: Viewer): MetricsDataSource {
   async function clientInput(
     clientId: string,
     selection: PeriodSelection,
+    accountId: string | null,
   ): Promise<ClientDataInput | null> {
     const record = (await loadClients()).find((c) => c.id === clientId);
     if (!record) return null;
+    // Only one of THIS client's accounts can narrow the scope (never another client's).
+    const account = accountId ? record.ad_accounts.find((a) => a.id === accountId) : undefined;
+    if (accountId && !account) return null;
+    const scope = { clientId, accountId: account?.id ?? null };
+    const accounts = account ? [account] : record.ad_accounts;
     const supabase = await db();
     // Everything the page can show: the previous period through the selected one.
     const window = { from: selection.previous.from, to: selection.range.to };
 
     const [states, campaigns, metrics, ads, adMetrics, reach] = await Promise.all([
-      selectSyncStates(supabase, clientId),
-      selectCampaigns(supabase, clientId),
-      selectCampaignMetrics(supabase, clientId, window),
-      selectAds(supabase, clientId),
-      selectAdMetrics(supabase, clientId, window),
-      selectAccountReach(supabase, clientId, window),
+      selectSyncStates(supabase, scope),
+      selectCampaigns(supabase, scope),
+      selectCampaignMetrics(supabase, scope, window),
+      selectAds(supabase, scope),
+      selectAdMetrics(supabase, scope, window),
+      selectAccountReach(supabase, scope, window),
     ]);
 
     const stateOf = new Map(states.map((s) => [s.ad_account_id, s]));
     const sync = combineSyncStates(
-      record.ad_accounts.map(
+      accounts.map(
         (a) =>
           stateOf.get(a.id) ?? {
             last_success_at: null,
@@ -143,14 +156,15 @@ export function createSupabaseSource(viewer: Viewer): MetricsDataSource {
 
     return {
       origin: metrics.some((m) => m.source === "simulated") ? "simulated" : "meta",
-      client: summary(record),
+      client: summary(record, scope.accountId),
       sync,
       campaigns: campaignInputs,
       ads: adInputs,
       reachFor(range) {
         // Meta deduplicates reach within ONE account; summing accounts would count the
-        // same person twice, so several accounts mean "unavailable" (docs §6).
-        if (record.ad_accounts.length !== 1) return null;
+        // same person twice, so several accounts mean "unavailable" (docs §6) — unless
+        // the page is narrowed to one account.
+        if (accounts.length !== 1) return null;
         const snap = reach.find((r) => r.date_start === range.from && r.date_stop === range.to);
         return snap ? { reach: num(snap.reach), impressions: num(snap.impressions) } : null;
       },
@@ -161,16 +175,16 @@ export function createSupabaseSource(viewer: Viewer): MetricsDataSource {
     origin: "meta",
 
     async listClients() {
-      return (await loadClients()).map(summary);
+      return (await loadClients()).map((c) => summary(c));
     },
 
-    async getDashboard(clientId, selection) {
-      const input = await clientInput(clientId, selection);
+    async getDashboard(clientId, selection, accountId = null) {
+      const input = await clientInput(clientId, selection, accountId);
       return input ? buildDashboardData(input, selection) : null;
     },
 
-    async getCampaigns(clientId, selection) {
-      const input = await clientInput(clientId, selection);
+    async getCampaigns(clientId, selection, accountId = null) {
+      const input = await clientInput(clientId, selection, accountId);
       return input ? buildCampaignsData(input, selection) : null;
     },
 

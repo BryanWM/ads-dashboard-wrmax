@@ -18,8 +18,17 @@ import { createSupabaseSource } from "./supabase/source";
 export interface MetricsDataSource {
   readonly origin: DataOrigin;
   listClients(): Promise<ClientSummary[]>;
-  getDashboard(clientId: string, selection: PeriodSelection): Promise<DashboardData | null>;
-  getCampaigns(clientId: string, selection: PeriodSelection): Promise<CampaignsData | null>;
+  /** `accountId` narrows to one of the client's ad accounts; foreign ids yield null. */
+  getDashboard(
+    clientId: string,
+    selection: PeriodSelection,
+    accountId?: string | null,
+  ): Promise<DashboardData | null>;
+  getCampaigns(
+    clientId: string,
+    selection: PeriodSelection,
+    accountId?: string | null,
+  ): Promise<CampaignsData | null>;
   /** null when the viewer is not allowed in the admin area. */
   getAdminOverview(): Promise<AdminOverview | null>;
   /** Any simulated row visible to this viewer → the "Dados simulados" badge shows. */

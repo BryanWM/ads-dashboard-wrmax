@@ -3,6 +3,7 @@ import "server-only";
 import { connection } from "next/server";
 
 import type { Viewer } from "@/lib/domain/access";
+import { resolveAccountScope, type AccountScope } from "@/lib/domain/account-scope";
 import { parsePeriodSelection, type PeriodSelection } from "@/lib/dates/period-params";
 import { todayInTimeZone } from "@/lib/dates/periods";
 import type { ClientSummary } from "@/lib/domain/types";
@@ -18,6 +19,8 @@ export interface ClientContext {
   clients: ClientSummary[];
   /** null only when the viewer can see no client at all. */
   client: ClientSummary | null;
+  /** `?conta=`, validated against THIS client's accounts (null = all accounts). */
+  account: AccountScope;
   /** Today in the client's timezone (latest selectable day). */
   today: string;
   selection: PeriodSelection;
@@ -35,12 +38,16 @@ export async function resolveClientContext(params: Params): Promise<ClientContex
   const clients = await source.listClients();
   const requested = Array.isArray(params.client) ? params.client[0] : params.client;
   const client = clients.find((c) => c.id === requested) ?? clients[0] ?? null;
-  const today = todayInTimeZone(client?.timezone ?? "America/Sao_Paulo");
+  const requestedAccount = Array.isArray(params.conta) ? params.conta[0] : params.conta;
+  const account = resolveAccountScope(client?.accounts ?? [], requestedAccount);
+  const scoped = client?.accounts.find((a) => a.id === account.accountId);
+  const today = todayInTimeZone(scoped?.timezone ?? client?.timezone ?? "America/Sao_Paulo");
   return {
     viewer,
     source,
     clients,
     client,
+    account,
     today,
     selection: parsePeriodSelection(params, today),
   };

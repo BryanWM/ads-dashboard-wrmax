@@ -141,6 +141,12 @@ export function clientSummary(client: SimClient): ClientSummary {
     currency: SIM_CURRENCY,
     timezone: SIM_TIMEZONE,
     adAccountCount: client.accounts.length,
+    accounts: client.accounts.map((a) => ({
+      id: a.id,
+      name: a.name,
+      currency: SIM_CURRENCY,
+      timezone: SIM_TIMEZONE,
+    })),
     objective: client.objective,
     costPerResultGoal: client.costPerResultGoal,
   };
@@ -154,9 +160,20 @@ export function allCampaigns(client: SimClient) {
   return client.accounts.flatMap((a) => a.campaigns);
 }
 
-function simulatedInput(client: SimClient, ctx: SimContext): ClientDataInput {
+/** The client's campaigns, or only those of one of its accounts. */
+function scopedCampaigns(client: SimClient, accountId: string | null) {
+  return accountId === null
+    ? allCampaigns(client)
+    : client.accounts.filter((a) => a.id === accountId).flatMap((a) => a.campaigns);
+}
+
+function simulatedInput(
+  client: SimClient,
+  ctx: SimContext,
+  accountId: string | null,
+): ClientDataInput {
   const sync = syncStatusFor(client, ctx);
-  const campaigns = allCampaigns(client).map((c) => ({
+  const campaigns = scopedCampaigns(client, accountId).map((c) => ({
     id: c.id,
     name: c.name,
     status: c.status,
@@ -164,7 +181,7 @@ function simulatedInput(client: SimClient, ctx: SimContext): ClientDataInput {
     resultIndicator: c.resultIndicator,
     rows: campaignRows(c, ctx, sync.dataThrough),
   }));
-  const withAds = allCampaigns(client).filter((c) => c.ads?.length);
+  const withAds = scopedCampaigns(client, accountId).filter((c) => c.ads?.length);
   const ads: AdInput[] | null =
     withAds.length === 0
       ? null
@@ -193,14 +210,21 @@ export function buildDashboard(
   client: SimClient,
   selection: PeriodSelection,
   ctx: SimContext,
+  accountId: string | null = null,
 ): DashboardData {
-  return buildDashboardData(simulatedInput(client, ctx), selection);
+  return buildDashboardData(simulatedInput(client, ctx, accountId), selection);
 }
 
 export function buildCampaigns(
   client: SimClient,
   selection: PeriodSelection,
   ctx: SimContext,
+  accountId: string | null = null,
 ): CampaignsData {
-  return buildCampaignsData(simulatedInput(client, ctx), selection);
+  return buildCampaignsData(simulatedInput(client, ctx, accountId), selection);
+}
+
+/** An account id only counts if it belongs to this client. */
+export function ownsAccount(client: SimClient, accountId: string | null | undefined) {
+  return accountId == null || client.accounts.some((a) => a.id === accountId);
 }

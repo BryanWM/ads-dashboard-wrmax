@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { SimulatedDataBadge } from "@/components/feedback/simulated-data-badge";
 import { SyncStatusLine } from "@/components/feedback/sync-status";
 import { PeriodChips } from "@/components/filters/period-chips";
@@ -14,6 +16,7 @@ export function DashboardHeader({
   sync,
   timeZone,
   simulated = false,
+  accountFilter,
 }: {
   clientName: string;
   preset: PeriodPreset | null;
@@ -21,6 +24,8 @@ export function DashboardHeader({
   timeZone: string;
   /** This client's numbers are simulated (demo client in Supabase mode). */
   simulated?: boolean;
+  /** Ad account selector (renders nothing for single-account clients). */
+  accountFilter?: ReactNode;
 }) {
   return (
     <header className="sticky top-14 z-10 -mx-4 flex flex-col gap-3 bg-fundo/85 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:flex-row lg:items-center lg:justify-between lg:px-8">
@@ -33,7 +38,10 @@ export function DashboardHeader({
         </div>
         {sync ? <SyncStatusLine sync={sync} timeZone={timeZone} className="text-xs" /> : null}
       </div>
-      <PeriodChips preset={preset} />
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+        {accountFilter}
+        <PeriodChips preset={preset} />
+      </div>
     </header>
   );
 }

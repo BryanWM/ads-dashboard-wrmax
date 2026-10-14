@@ -34,7 +34,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/audit", label: "Auditoria", icon: ScrollTextIcon, keep: "client" },
 ];
 
-const PERIOD_KEYS = ["client", "period", "from", "to", "compare"] as const;
+const PERIOD_KEYS = ["client", "conta", "period", "from", "to", "compare"] as const;
 
 /** Builds an href that carries the selected client (and period, if relevant). */
 export function scopedHref(item: Pick<NavItem, "href" | "keep">, current: URLSearchParams) {

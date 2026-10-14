@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import { NoAdAccountsState, NoClientsState } from "@/components/feedback/no-client-state";
 import { SyncFailureAlert } from "@/components/feedback/sync-status";
+import { AccountFilter } from "@/components/filters/account-filter";
 import { isAgencyMember } from "@/lib/domain/access";
 import { isDemoMode } from "@/server/auth/session";
 import { resolveClientContext } from "@/server/data/context";
@@ -23,13 +24,13 @@ export default function DashboardPage({ searchParams }: PageProps<"/dashboard">)
 
 async function Dashboard({ searchParams }: Pick<PageProps<"/dashboard">, "searchParams">) {
   const params = await searchParams;
-  const { client, selection, today, source, viewer } = await resolveClientContext(params);
+  const { client, account, selection, today, source, viewer } = await resolveClientContext(params);
   if (!client) return <NoClientsState />;
   const audience = isAgencyMember(viewer) ? "agency" : "client";
 
   const [data, campaigns] = await Promise.all([
-    source.getDashboard(client.id, selection),
-    source.getCampaigns(client.id, selection),
+    source.getDashboard(client.id, selection, account.accountId),
+    source.getCampaigns(client.id, selection, account.accountId),
   ]);
   if (!data || !campaigns) return <NoClientsState />;
 
@@ -39,15 +40,16 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/dashboard">, "search
         clientName={client.name}
         preset={selection.preset}
         sync={data.sync}
-        timeZone={client.timezone}
+        timeZone={data.client.timezone}
         // Demo mode already badges the whole app in the top bar.
         simulated={data.origin === "simulated" && !isDemoMode()}
+        accountFilter={<AccountFilter accounts={client.accounts} scope={account} />}
       />
       {client.adAccountCount === 0 ? (
         <NoAdAccountsState clientName={client.name} clientId={client.id} audience={audience} />
       ) : (
         <>
-          <SyncFailureAlert sync={data.sync} timeZone={client.timezone} audience={audience} />
+          <SyncFailureAlert sync={data.sync} timeZone={data.client.timezone} audience={audience} />
           <Overview
             data={data}
             campaigns={campaigns.campaigns}

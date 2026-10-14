@@ -39,29 +39,38 @@ export interface ClientRecord {
   name: string;
   objective: ClientObjective | null;
   cost_per_result_goal: number | string | null;
-  ad_accounts: { id: string; currency: string; timezone_name: string }[];
+  ad_accounts: { id: string; name: string; currency: string; timezone_name: string }[];
+}
+
+/** One client, optionally narrowed to one of its ad accounts (`?conta=`). */
+export interface Scope {
+  clientId: string;
+  accountId: string | null;
 }
 
 export async function selectClients(db: SupabaseClient): Promise<ClientRecord[]> {
   return must(
     await db
       .from("clients")
-      .select("id, name, objective, cost_per_result_goal, ad_accounts(id, currency, timezone_name)")
+      .select(
+        "id, name, objective, cost_per_result_goal, ad_accounts(id, name, currency, timezone_name)",
+      )
       .eq("status", "active")
       .order("created_at")
-      .order("name"),
+      .order("name")
+      .order("name", { referencedTable: "ad_accounts" }),
   );
 }
 
-export async function selectSyncStates(db: SupabaseClient, clientId: string) {
-  return must(
-    await db
-      .from("ad_account_sync_state")
-      .select(
-        "ad_account_id, last_success_at, data_through_date, consecutive_failures, last_error_message",
-      )
-      .eq("client_id", clientId),
-  ) as (SyncStateRow & { ad_account_id: string })[];
+export async function selectSyncStates(db: SupabaseClient, scope: Scope) {
+  let q = db
+    .from("ad_account_sync_state")
+    .select(
+      "ad_account_id, last_success_at, data_through_date, consecutive_failures, last_error_message",
+    )
+    .eq("client_id", scope.clientId);
+  if (scope.accountId) q = q.eq("ad_account_id", scope.accountId);
+  return must(await q) as (SyncStateRow & { ad_account_id: string })[];
 }
 
 export interface CampaignRecord {
@@ -72,14 +81,13 @@ export interface CampaignRecord {
   effective_status: string | null;
 }
 
-export async function selectCampaigns(db: SupabaseClient, clientId: string) {
-  return must(
-    await db
-      .from("campaigns")
-      .select("id, name, objective, status, effective_status")
-      .eq("client_id", clientId)
-      .order("name"),
-  ) as CampaignRecord[];
+export async function selectCampaigns(db: SupabaseClient, scope: Scope) {
+  let q = db
+    .from("campaigns")
+    .select("id, name, objective, status, effective_status")
+    .eq("client_id", scope.clientId);
+  if (scope.accountId) q = q.eq("ad_account_id", scope.accountId);
+  return must(await q.order("name")) as CampaignRecord[];
 }
 
 const METRIC_COLUMNS =
@@ -90,18 +98,17 @@ export type CampaignMetricRecord = MetricRow & {
   source: "meta" | "simulated";
 };
 
-export function selectCampaignMetrics(db: SupabaseClient, clientId: string, window: DateRange) {
-  return fetchAll<CampaignMetricRecord>((from, to) =>
-    db
+export function selectCampaignMetrics(db: SupabaseClient, scope: Scope, window: DateRange) {
+  return fetchAll<CampaignMetricRecord>((from, to) => {
+    let q = db
       .from("campaign_metrics_daily")
       .select(`campaign_id, ${METRIC_COLUMNS}, add_to_cart, initiate_checkout`)
-      .eq("client_id", clientId)
+      .eq("client_id", scope.clientId)
       .gte("date", window.from)
-      .lte("date", window.to)
-      .order("date")
-      .order("campaign_id")
-      .range(from, to),
-  );
+      .lte("date", window.to);
+    if (scope.accountId) q = q.eq("ad_account_id", scope.accountId);
+    return q.order("date").order("campaign_id").range(from, to);
+  });
 }
 
 export interface AdRecord {
@@ -111,26 +118,28 @@ export interface AdRecord {
   thumbnail_url: string | null;
 }
 
-export async function selectAds(db: SupabaseClient, clientId: string) {
-  return must(
-    await db.from("ads").select("id, name, campaign_id, thumbnail_url").eq("client_id", clientId),
-  ) as AdRecord[];
+export async function selectAds(db: SupabaseClient, scope: Scope) {
+  let q = db
+    .from("ads")
+    .select("id, name, campaign_id, thumbnail_url")
+    .eq("client_id", scope.clientId);
+  if (scope.accountId) q = q.eq("ad_account_id", scope.accountId);
+  return must(await q) as AdRecord[];
 }
 
 export type AdMetricRecord = MetricRow & { ad_id: string };
 
-export function selectAdMetrics(db: SupabaseClient, clientId: string, window: DateRange) {
-  return fetchAll<AdMetricRecord>((from, to) =>
-    db
+export function selectAdMetrics(db: SupabaseClient, scope: Scope, window: DateRange) {
+  return fetchAll<AdMetricRecord>((from, to) => {
+    let q = db
       .from("ad_metrics_daily")
       .select(`ad_id, ${METRIC_COLUMNS}`)
-      .eq("client_id", clientId)
+      .eq("client_id", scope.clientId)
       .gte("date", window.from)
-      .lte("date", window.to)
-      .order("date")
-      .order("ad_id")
-      .range(from, to),
-  );
+      .lte("date", window.to);
+    if (scope.accountId) q = q.eq("ad_account_id", scope.accountId);
+    return q.order("date").order("ad_id").range(from, to);
+  });
 }
 
 export interface ReachRecord {
@@ -141,16 +150,16 @@ export interface ReachRecord {
   impressions: number | string | null;
 }
 
-export async function selectAccountReach(db: SupabaseClient, clientId: string, window: DateRange) {
-  return must(
-    await db
-      .from("reach_snapshots")
-      .select("ad_account_id, date_start, date_stop, reach, impressions")
-      .eq("client_id", clientId)
-      .is("campaign_id", null)
-      .gte("date_start", window.from)
-      .lte("date_stop", window.to),
-  ) as ReachRecord[];
+export async function selectAccountReach(db: SupabaseClient, scope: Scope, window: DateRange) {
+  let q = db
+    .from("reach_snapshots")
+    .select("ad_account_id, date_start, date_stop, reach, impressions")
+    .eq("client_id", scope.clientId)
+    .is("campaign_id", null)
+    .gte("date_start", window.from)
+    .lte("date_stop", window.to);
+  if (scope.accountId) q = q.eq("ad_account_id", scope.accountId);
+  return must(await q) as ReachRecord[];
 }
 
 /** True when the viewer can see any simulated row (drives the "Dados simulados" badge). */

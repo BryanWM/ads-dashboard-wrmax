@@ -94,6 +94,22 @@ describe("simulated read model", () => {
     expect(total).toBeCloseTo(dash.current.metrics.spend ?? Number.NaN, 6);
   });
 
+  it("narrows to one ad account and the parts add up to the whole", () => {
+    const auto = client("demo-auto-center");
+    const main = buildCampaigns(auto, last30, ctx, "acc-auto-1");
+    const institutional = buildCampaigns(auto, last30, ctx, "acc-auto-2");
+    expect(main.campaigns.map((c) => c.id)).toEqual(["cmp-a1", "cmp-a2", "cmp-a3"]);
+    expect(institutional.campaigns.map((c) => c.id)).toEqual(["cmp-a4", "cmp-a5"]);
+
+    const whole = buildDashboard(auto, last30, ctx).current.metrics.spend ?? Number.NaN;
+    const parts =
+      (buildDashboard(auto, last30, ctx, "acc-auto-1").current.metrics.spend ?? 0) +
+      (buildDashboard(auto, last30, ctx, "acc-auto-2").current.metrics.spend ?? 0);
+    expect(parts).toBeCloseTo(whole, 6);
+    // The selector still lists every account of the client.
+    expect(main.client.accounts.map((a) => a.id)).toEqual(["acc-auto-1", "acc-auto-2"]);
+  });
+
   it("is deterministic for the same day", () => {
     const a = buildDashboard(client("demo-auto-center"), last30, ctx);
     const b = buildDashboard(client("demo-auto-center"), last30, ctx);
