@@ -23,8 +23,10 @@ async function SidebarLoader() {
 
 async function TopbarLoader() {
   const viewer = await getViewer();
-  const simulated = await getDataSource(viewer).hasSimulatedData();
-  return <Topbar simulated={simulated} clientView={!isAgencyMember(viewer)} demo={isDemoMode()} />;
+  const hasSimulated = await getDataSource(viewer).hasSimulatedData();
+  return (
+    <Topbar hasSimulated={hasSimulated} clientView={!isAgencyMember(viewer)} demo={isDemoMode()} />
+  );
 }
 
 /**

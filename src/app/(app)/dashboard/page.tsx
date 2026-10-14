@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { NoAdAccountsState, NoClientsState } from "@/components/feedback/no-client-state";
 import { SyncFailureAlert } from "@/components/feedback/sync-status";
 import { isAgencyMember } from "@/lib/domain/access";
+import { isDemoMode } from "@/server/auth/session";
 import { resolveClientContext } from "@/server/data/context";
 
 import { DashboardHeader } from "./_components/dashboard-header";
@@ -39,6 +40,8 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/dashboard">, "search
         preset={selection.preset}
         sync={data.sync}
         timeZone={client.timezone}
+        // Demo mode already badges the whole app in the top bar.
+        simulated={data.origin === "simulated" && !isDemoMode()}
       />
       {client.adAccountCount === 0 ? (
         <NoAdAccountsState clientName={client.name} clientId={client.id} audience={audience} />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { NoAdAccountsState, NoClientsState } from "@/components/feedback/no-client-state";
+import { SimulatedDataBadge } from "@/components/feedback/simulated-data-badge";
 import {
   PartialPeriodNote,
   SyncFailureAlert,
@@ -12,6 +13,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isAgencyMember } from "@/lib/domain/access";
 import { formatDateRange } from "@/lib/format";
+import { isDemoMode } from "@/server/auth/session";
 import { resolveClientContext } from "@/server/data/context";
 
 import { CampaignsTable } from "./_components/campaigns-table";
@@ -48,7 +50,13 @@ async function Campaigns({ searchParams }: Pick<PageProps<"/campaigns">, "search
             <SyncStatusLine sync={data.sync} timeZone={client.timezone} />
           </div>
         }
-        actions={<PeriodPicker preset={selection.preset} range={selection.range} today={today} />}
+        actions={
+          <>
+            {/* Demo mode already badges the whole app in the top bar. */}
+            {data.origin === "simulated" && !isDemoMode() ? <SimulatedDataBadge /> : null}
+            <PeriodPicker preset={selection.preset} range={selection.range} today={today} />
+          </>
+        }
       />
       {client.adAccountCount === 0 ? (
         <NoAdAccountsState clientName={client.name} clientId={client.id} audience={audience} />

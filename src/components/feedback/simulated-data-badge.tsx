@@ -5,8 +5,16 @@ import { StatusDot } from "./status-dot";
 /**
  * Mandatory marker for any view that shows non-Meta (demo) data.
  * See CLAUDE.md: simulated data must never look like real platform data.
+ * - "all": every number on screen is simulated (demo mode, or a demo client's page).
+ * - "some": the screen mixes real and demo records (admin lists).
  */
-export function SimulatedDataBadge({ className }: { className?: string }) {
+export function SimulatedDataBadge({
+  scope = "all",
+  className,
+}: {
+  scope?: "all" | "some";
+  className?: string;
+}) {
   return (
     <span
       role="status"
@@ -16,9 +24,16 @@ export function SimulatedDataBadge({ className }: { className?: string }) {
       )}
     >
       <StatusDot tone="atencao" />
-      <span>
-        Dados simulados<span className="hidden sm:inline"> — não são dados reais da Meta</span>
-      </span>
+      {scope === "all" ? (
+        <span>
+          Dados simulados<span className="hidden sm:inline"> — não são dados reais da Meta</span>
+        </span>
+      ) : (
+        <span>
+          Inclui dados simulados
+          <span className="hidden sm:inline"> — clientes de demonstração</span>
+        </span>
+      )}
     </span>
   );
 }

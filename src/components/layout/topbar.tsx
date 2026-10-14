@@ -26,13 +26,26 @@ function SectionTitle({ clientView }: { clientView: boolean }) {
 }
 
 interface TopbarProps {
-  simulated: boolean;
+  /** The viewer can see some simulated rows (only used on admin pages). */
+  hasSimulated: boolean;
   clientView: boolean;
-  /** Demo mode: the chip makes it obvious the client experience is being previewed. */
+  /** Demo mode: everything is simulated, and the client experience can be previewed. */
   demo: boolean;
 }
 
-export function Topbar({ simulated, clientView, demo }: TopbarProps) {
+/**
+ * Badge rule: demo mode → always "Dados simulados". With Supabase, client pages show
+ * their own badge from the numbers they render (a real client never gets one); admin
+ * lists, which mix real and demo clients, show "Inclui dados simulados" here.
+ */
+function TopbarBadge({ hasSimulated, demo }: { hasSimulated: boolean; demo: boolean }) {
+  const pathname = usePathname();
+  if (demo) return <SimulatedDataBadge />;
+  if (hasSimulated && pathname.startsWith("/admin")) return <SimulatedDataBadge scope="some" />;
+  return null;
+}
+
+export function Topbar({ hasSimulated, clientView, demo }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-linha surface-glass px-3 sm:px-4 md:rounded-t-2xl">
       {/* 44px touch target on phones (WCAG / brief), compact on desktop. */}
@@ -48,7 +61,7 @@ export function Topbar({ simulated, clientView, demo }: TopbarProps) {
           <span className="sm:hidden">Cliente</span>
         </span>
       ) : null}
-      {simulated ? <SimulatedDataBadge /> : null}
+      <TopbarBadge hasSimulated={hasSimulated} demo={demo} />
       <PendingBar />
     </header>
   );
