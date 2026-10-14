@@ -1,7 +1,16 @@
 "use client";
 
+import { XIcon } from "lucide-react";
+
 import { MetricTrendChart } from "@/components/charts/metric-trend-chart";
 import { DeltaIndicator } from "@/components/metrics/delta-indicator";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -71,79 +80,148 @@ function technicalRows(card: OverviewCard, model: OverviewModel, data: Dashboard
   }
 }
 
+/** Value + chart + technical rows: identical in the phone sheet and the desktop window. */
+function MetricBody({
+  card,
+  model,
+  data,
+  wide,
+}: Omit<MetricSheetProps, "onClose"> & { card: OverviewCard; wide: boolean }) {
+  const def = METRICS[card.metric];
+  const hasPrevious = card.series.some((p) => p.previous !== null);
+  const rows = technicalRows(card, model, data);
+
+  return (
+    <>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-5 pt-2">
+        <span className="font-display text-3xl font-bold text-texto figures-tabular">
+          {formatMetricValue(card.value, def.format, { currency: data.client.currency })}
+        </span>
+        <DeltaIndicator change={card.change} polarity={def.polarity} />
+        <span className="text-xs text-texto-inativo">vs. período anterior</span>
+      </div>
+
+      {card.series.length > 0 ? (
+        <div className="px-3 pt-4">
+          <MetricTrendChart
+            metric={card.metric}
+            data={card.series}
+            currency={data.client.currency}
+            showComparison={hasPrevious}
+            className={wide ? "h-60" : "h-52"}
+          />
+        </div>
+      ) : (
+        <p className="px-5 pt-4 text-[13px] text-texto-inativo">
+          Este número não tem evolução por dia: as pessoas são contadas uma única vez no período
+          inteiro.
+        </p>
+      )}
+
+      <dl
+        className={
+          wide
+            ? "mx-5 mt-5 mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-linha bg-linha"
+            : "mx-5 mt-4 mb-6 divide-y divide-linha"
+        }
+      >
+        {rows.map((row) => (
+          <div
+            key={row.label}
+            className={
+              wide
+                ? "flex flex-col gap-1 bg-superficie px-4 py-3"
+                : "flex items-baseline justify-between gap-4 py-3"
+            }
+          >
+            <dt className="text-[13px] text-texto-apagado">{row.label}</dt>
+            <dd className="text-sm font-semibold text-texto figures-tabular">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="px-5 pb-6 text-xs leading-relaxed text-texto-inativo">{def.description}</p>
+    </>
+  );
+}
+
 /**
  * Details of one number: a one-sentence explanation, the daily chart and the
- * technical metrics. Bottom sheet on phones, side panel on larger screens.
+ * technical metrics. Bottom sheet on phones (thumb-friendly); on larger screens a
+ * centred macOS-style window (title bar, neutral window controls, scale-in with
+ * the WRMax curve, blurred backdrop from the DS modal pattern).
  */
 export function MetricSheet({ card, model, data, onClose }: MetricSheetProps) {
   const isMobile = useIsMobile();
-  const def = card ? METRICS[card.metric] : null;
-  const hasPrevious = card?.series.some((p) => p.previous !== null) ?? false;
+  const open = card !== null;
+  const onOpenChange = (next: boolean) => !next && onClose();
+
+  if (isMobile) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="bottom"
+          className="max-h-[88svh] gap-0 overflow-y-auto rounded-t-2xl border-t border-linha-2 bg-superficie"
+        >
+          {card ? (
+            <>
+              <div aria-hidden className="mx-auto mt-2 h-1 w-10 rounded-full bg-linha-2" />
+              <SheetHeader className="gap-2 px-5 pt-5 pb-2">
+                <p className="text-ouro etiqueta">Detalhes</p>
+                <SheetTitle className="font-display text-xl font-bold text-texto">
+                  {card.label}
+                </SheetTitle>
+                <SheetDescription className="text-[15px] leading-relaxed text-texto-apagado">
+                  {METRICS[card.metric].explanation}
+                </SheetDescription>
+              </SheetHeader>
+              <MetricBody card={card} model={model} data={data} wide={false} />
+            </>
+          ) : null}
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
-    <Sheet open={card !== null} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        side={isMobile ? "bottom" : "right"}
-        className={
-          isMobile
-            ? "max-h-[88svh] gap-0 overflow-y-auto rounded-t-2xl border-t border-linha-2 bg-superficie"
-            : "w-full gap-0 overflow-y-auto border-l border-linha-2 bg-superficie sm:max-w-lg"
-        }
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-h-[88vh] gap-0 overflow-hidden rounded-2xl border border-linha-2 bg-superficie p-0 shadow-floating ring-0 duration-300 ease-mac sm:max-w-2xl"
       >
-        {card && def ? (
-          <>
-            {isMobile ? (
-              <div aria-hidden className="mx-auto mt-2 h-1 w-10 rounded-full bg-linha-2" />
-            ) : null}
-            <SheetHeader className="gap-2 px-5 pt-5 pb-2">
-              <p className="text-ouro etiqueta">Detalhes</p>
-              <SheetTitle className="font-display text-xl font-bold text-texto">
-                {card.label}
-              </SheetTitle>
-              <SheetDescription className="text-[15px] leading-relaxed text-texto-apagado">
-                {def.explanation}
-              </SheetDescription>
-            </SheetHeader>
-
-            <div className="flex items-baseline gap-3 px-5 pt-2">
-              <span className="font-display text-3xl font-bold text-texto figures-tabular">
-                {formatMetricValue(card.value, def.format, { currency: data.client.currency })}
-              </span>
-              <DeltaIndicator change={card.change} polarity={def.polarity} />
-              <span className="text-xs text-texto-inativo">vs. período anterior</span>
+        {card ? (
+          <div className="flex max-h-[88vh] flex-col">
+            {/* Window chrome: neutral controls (gold stays the only accent colour). */}
+            <div className="relative flex h-11 shrink-0 items-center border-b border-linha bg-superficie-2/60 px-4">
+              <div className="group flex items-center gap-2">
+                <DialogClose
+                  aria-label="Fechar"
+                  // 12px dot, 44px invisible hit area (tablets get this window too).
+                  className="relative flex size-3 items-center justify-center rounded-full bg-linha-2 text-transparent transition-colors outline-none group-hover:text-fundo after:absolute after:-inset-4 after:content-[''] hover:bg-texto-apagado focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dourado"
+                >
+                  <XIcon className="size-2.5" strokeWidth={3} />
+                </DialogClose>
+                <span aria-hidden className="size-3 rounded-full bg-linha-2" />
+                <span aria-hidden className="size-3 rounded-full bg-linha-2" />
+              </div>
+              <p className="pointer-events-none absolute inset-x-0 text-center etiqueta text-texto-inativo">
+                Detalhes
+              </p>
             </div>
 
-            {card.series.length > 0 ? (
-              <div className="px-3 pt-4">
-                <MetricTrendChart
-                  metric={card.metric}
-                  data={card.series}
-                  currency={data.client.currency}
-                  showComparison={hasPrevious}
-                  className="h-52"
-                />
+            <div className="overflow-y-auto">
+              <div className="space-y-2 px-5 pt-5 pb-2">
+                <DialogTitle className="font-display text-xl font-bold text-texto">
+                  {card.label}
+                </DialogTitle>
+                <DialogDescription className="text-[15px] leading-relaxed text-texto-apagado">
+                  {METRICS[card.metric].explanation}
+                </DialogDescription>
               </div>
-            ) : (
-              <p className="px-5 pt-4 text-[13px] text-texto-inativo">
-                Este número não tem evolução por dia: as pessoas são contadas uma única vez no
-                período inteiro.
-              </p>
-            )}
-
-            <dl className="mx-5 mt-4 mb-6 divide-y divide-linha">
-              {technicalRows(card, model, data).map((row) => (
-                <div key={row.label} className="flex items-baseline justify-between gap-4 py-3">
-                  <dt className="text-[13px] text-texto-apagado">{row.label}</dt>
-                  <dd className="text-sm font-semibold text-texto figures-tabular">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="px-5 pb-6 text-xs leading-relaxed text-texto-inativo">
-              {def.description}
-            </p>
-          </>
+              <MetricBody card={card} model={model} data={data} wide />
+            </div>
+          </div>
         ) : null}
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

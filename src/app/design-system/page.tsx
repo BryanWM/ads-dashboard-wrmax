@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { ControlsDemo } from "./_components/controls-demo";
 import { DataDemo } from "./_components/data-demo";
 import { Foundations } from "./_components/foundations";
+import { MetricWindowDemo } from "./_components/metric-window-demo";
 import { StatesDemo } from "./_components/states-demo";
 
 // Internal reference page. Will be restricted to platform admins in Phase 5.
@@ -40,6 +41,7 @@ export default function DesignSystemPage() {
         </div>
         <Foundations />
         <DataDemo />
+        <MetricWindowDemo />
         <ControlsDemo />
         <StatesDemo />
       </main>
