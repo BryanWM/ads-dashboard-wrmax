@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
-import { usePathname, useSearchParams } from "next/navigation";
 
 import {
   DropdownMenu,
@@ -19,32 +18,15 @@ import {
 } from "@/components/ui/sidebar";
 import type { ClientSummary } from "@/lib/domain/types";
 
-import { useNavigationPending } from "./navigation-pending";
-
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-}
+import { clientInitials as initials, useSelectClient } from "./use-select-client";
 
 export function ClientSwitcher({ clients }: { clients: ClientSummary[] }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const { navigate } = useNavigationPending();
   const { isMobile, setOpenMobile } = useSidebar();
-
-  const selectedId = searchParams.get("client");
-  const selected = clients.find((c) => c.id === selectedId) ?? clients[0];
+  const { selected, select: selectClient } = useSelectClient(clients);
 
   function select(id: string) {
-    const params = new URLSearchParams(searchParams);
-    params.set("client", id);
     if (isMobile) setOpenMobile(false);
-    // Admin pages are organisation-wide; switching client goes to that client's overview.
-    const target = pathname.startsWith("/admin") ? "/dashboard" : pathname;
-    navigate(`${target}?${params.toString()}`);
+    selectClient(id);
   }
 
   if (!selected) return null;

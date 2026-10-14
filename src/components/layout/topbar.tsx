@@ -48,9 +48,9 @@ function TopbarBadge({ hasSimulated, demo }: { hasSimulated: boolean; demo: bool
 export function Topbar({ hasSimulated, clientView, demo }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-linha surface-glass px-3 sm:px-4 md:rounded-t-2xl">
-      {/* 44px touch target on phones (WCAG / brief), compact on desktop. */}
-      <SidebarTrigger className="-ml-2 size-11 md:-ml-1 md:size-8" />
-      <Separator orientation="vertical" className="mr-1 h-4 bg-linha" />
+      {/* Phones navigate with the bottom bar (its "Mais/Conta" opens this menu). */}
+      <SidebarTrigger className="hidden md:-ml-1 md:inline-flex md:size-8" />
+      <Separator orientation="vertical" className="mr-1 hidden h-4 bg-linha md:block" />
       <div className="min-w-0 flex-1">
         <SectionTitle clientView={clientView} />
       </div>

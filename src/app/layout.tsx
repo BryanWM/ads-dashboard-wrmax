@@ -27,6 +27,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#0a0907",
   colorScheme: "dark",
+  // Lets the bottom bar use env(safe-area-inset-bottom) on iPhones.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

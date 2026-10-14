@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { AppSidebar, AppSidebarSkeleton } from "@/components/layout/app-sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { NavigationPendingProvider, PendingContent } from "@/components/layout/navigation-pending";
 import { Topbar } from "@/components/layout/topbar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -11,13 +12,18 @@ import { getDataSource } from "@/server/data/source";
 async function SidebarLoader() {
   const viewer = await getViewer();
   const clients = await getDataSource(viewer).listClients();
+  const view = toViewerView(viewer);
   return (
-    <AppSidebar
-      clients={clients}
-      viewer={toViewerView(viewer)}
-      showAdmin={canAccessAdmin(viewer)}
-      demo={isDemoMode()}
-    />
+    <>
+      {/* On phones the sidebar is the "Mais/Conta" sheet; the bottom bar navigates. */}
+      <AppSidebar
+        clients={clients}
+        viewer={view}
+        showAdmin={canAccessAdmin(viewer)}
+        demo={isDemoMode()}
+      />
+      <BottomNav clients={clients} viewer={view} />
+    </>
   );
 }
 
@@ -50,7 +56,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               overflow-x: clip (not hidden) crops transient overflow from entrance
               animations without creating a scroll container, so sticky headers keep working.
             */}
-            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-x-clip px-4 py-6 sm:px-6 lg:px-8">
+            {/* Phones: bottom padding clears the fixed bottom bar (+ iPhone gesture area). */}
+            <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col overflow-x-clip px-4 pt-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-6 lg:px-8">
               {children}
             </div>
           </PendingContent>

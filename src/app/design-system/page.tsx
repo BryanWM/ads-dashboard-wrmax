@@ -4,6 +4,7 @@ import { SimulatedDataBadge } from "@/components/feedback/simulated-data-badge";
 import { BrandLogo } from "@/components/layout/brand-logo";
 import { Separator } from "@/components/ui/separator";
 
+import { BottomNavDemo } from "./_components/bottom-nav-demo";
 import { ControlsDemo } from "./_components/controls-demo";
 import { DataDemo } from "./_components/data-demo";
 import { Foundations } from "./_components/foundations";
@@ -42,6 +43,7 @@ export default function DesignSystemPage() {
         <Foundations />
         <DataDemo />
         <MetricWindowDemo />
+        <BottomNavDemo />
         <ControlsDemo />
         <StatesDemo />
       </main>
