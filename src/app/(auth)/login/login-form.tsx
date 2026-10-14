@@ -44,6 +44,7 @@ export function LoginForm({ demo }: { demo: boolean }) {
             name="password"
             type="password"
             autoComplete="current-password"
+            placeholder="Digite sua senha"
             disabled={demo}
             aria-invalid={!!errors.password || undefined}
             aria-describedby={errors.password ? "password-error" : undefined}
