@@ -22,8 +22,8 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
 - Banco: migrações em `supabase/migrations` são aplicadas pelo usuário no SQL Editor (sem
   CLI), primeiro no projeto **dev** e depois no de produção (ADR-012). Antes de entregar
   uma migração, valide no PGlite com `supabase/tests/rls_isolation.sql`.
-- O `.env.local` aponta para o projeto Supabase de **desenvolvimento**; chaves de produção e
-  o token da Meta nunca ficam na máquina local.
+- O `.env.local` aponta para o projeto Supabase de **testes**; chaves de produção nunca
+  ficam na máquina local. Virada para a conta da empresa: `docs/go-live.md`.
 - Modo Supabase (env presente) × modo demonstração (sem env): ADR-010. Com Supabase, o
   login real passa pela internet — não faça login no lugar do usuário; peça que ele teste.
 
