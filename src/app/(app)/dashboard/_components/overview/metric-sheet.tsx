@@ -4,6 +4,7 @@ import { XIcon } from "lucide-react";
 
 import { MetricTrendChart } from "@/components/charts/metric-trend-chart";
 import { DeltaIndicator } from "@/components/metrics/delta-indicator";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -190,22 +191,22 @@ export function MetricSheet({ card, model, data, onClose }: MetricSheetProps) {
       >
         {card ? (
           <div className="flex max-h-[88vh] flex-col">
-            {/* Window chrome: neutral controls (gold stays the only accent colour). */}
-            <div className="relative flex h-11 shrink-0 items-center border-b border-linha bg-superficie-2/60 px-4">
-              <div className="group flex items-center gap-2">
-                <DialogClose
-                  aria-label="Fechar"
-                  // 12px dot, 44px invisible hit area (tablets get this window too).
-                  className="relative flex size-3 items-center justify-center rounded-full bg-linha-2 text-transparent transition-colors outline-none group-hover:text-fundo after:absolute after:-inset-4 after:content-[''] hover:bg-texto-apagado focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-dourado"
-                >
-                  <XIcon className="size-2.5" strokeWidth={3} />
-                </DialogClose>
-                <span aria-hidden className="size-3 rounded-full bg-linha-2" />
-                <span aria-hidden className="size-3 rounded-full bg-linha-2" />
-              </div>
-              <p className="pointer-events-none absolute inset-x-0 text-center etiqueta text-texto-inativo">
-                Detalhes
-              </p>
+            {/* Window title bar: section label + a regular close button. */}
+            <div className="flex h-12 shrink-0 items-center justify-between border-b border-linha bg-superficie-2/60 pr-2 pl-5">
+              <p className="etiqueta text-texto-inativo">Detalhes</p>
+              <DialogClose
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Fechar"
+                    // ≥44px hit area around the icon button (tablets get this window too).
+                    className="relative after:absolute after:-inset-1.5 after:content-['']"
+                  />
+                }
+              >
+                <XIcon />
+              </DialogClose>
             </div>
 
             <div className="overflow-y-auto">
