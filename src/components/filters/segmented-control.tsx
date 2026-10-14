@@ -65,7 +65,10 @@ export function SegmentedControl<T extends string>({
             className={cn(
               "relative rounded-chip px-3 font-semibold whitespace-nowrap text-texto-inativo transition-colors duration-[450ms] outline-none hover:text-texto-apagado focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-dourado",
               size === "lg" ? "h-11 text-sm" : "h-8 text-[13px]",
-              fill && "min-w-0 flex-1 px-2",
+              // flex-auto (not flex-1): each option starts from its label width and shares
+              // the spare space, so the longest label ("Mês atual") never gets squeezed
+              // when the container is content-sized (desktop).
+              fill && "flex-auto px-3",
               active && "text-texto hover:text-texto",
             )}
           >

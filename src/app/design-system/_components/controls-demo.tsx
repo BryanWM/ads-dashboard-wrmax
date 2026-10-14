@@ -8,8 +8,10 @@ import {
   SettingsIcon,
   TrashIcon,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
+import { SegmentedControl } from "@/components/filters/segmented-control";
 import { DeltaIndicator } from "@/components/metrics/delta-indicator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,6 +54,31 @@ const PERIODS = [
   { value: "last_30d", label: "Últimos 30 dias" },
   { value: "this_month", label: "Este mês" },
 ];
+
+const CHIPS = [
+  { value: "last_7d", label: "7 dias" },
+  { value: "last_30d", label: "30 dias" },
+  { value: "this_month", label: "Mês atual" },
+] as const;
+
+/** Same configuration as PeriodChips (which needs the app's navigation context). */
+function PeriodChipsPreview() {
+  const [value, setValue] = useState<(typeof CHIPS)[number]["value"]>("this_month");
+  return (
+    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+      <p className="text-sm text-texto-apagado">Pizzaria Demonstração</p>
+      <SegmentedControl
+        aria-label="Período"
+        size="lg"
+        fill
+        options={CHIPS}
+        value={value}
+        onChange={setValue}
+        className="lg:w-auto"
+      />
+    </div>
+  );
+}
 
 export function ControlsDemo() {
   return (
@@ -102,6 +129,14 @@ export function ControlsDemo() {
           <DeltaIndicator change={9.7} polarity="lower-is-better" />
           <DeltaIndicator change={null} polarity="higher-is-better" />
         </div>
+      </CatalogSection>
+
+      <CatalogSection
+        id="filtros"
+        title="Filtros (pílula deslizante)"
+        description="Chips de período da visão do cliente: largura total no celular, largura do conteúdo no desktop."
+      >
+        <PeriodChipsPreview />
       </CatalogSection>
 
       <CatalogSection id="formularios" title="Formulários">
