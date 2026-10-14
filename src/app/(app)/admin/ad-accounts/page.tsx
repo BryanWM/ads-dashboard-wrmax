@@ -23,10 +23,13 @@ import {
   AdminSkeleton,
   AdminTableCard,
   DemoReadOnlyNotice,
-  MetaPendingNotice,
 } from "../_components/admin-ui";
+import { SyncNowButton } from "../_components/meta-buttons";
 
 export const metadata: Metadata = { title: "Contas de anúncio" };
+
+// "Buscar dados" runs a full account sync (first run fetches 90 days).
+export const maxDuration = 300;
 
 export default function AdminAdAccountsPage() {
   return (
@@ -48,7 +51,7 @@ async function AdAccounts() {
         title="Contas de anúncio"
         description="Contas disponíveis pela conexão Meta e o cliente de cada uma. Ao trocar o cliente, o histórico da conta vai junto."
       />
-      {editable ? <MetaPendingNotice /> : <DemoReadOnlyNotice />}
+      {editable ? null : <DemoReadOnlyNotice />}
       <AdminTableCard title={`${data.adAccounts.length} contas`}>
         <Table>
           <TableHeader>
@@ -58,7 +61,8 @@ async function AdAccounts() {
               <TableHead>Moeda · fuso</TableHead>
               <TableHead>Sincronização</TableHead>
               <TableHead>Situação</TableHead>
-              <TableHead className="pr-5">Última atualização</TableHead>
+              <TableHead>Última atualização</TableHead>
+              {editable ? <TableHead className="pr-5" aria-label="Ações" /> : null}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -92,9 +96,12 @@ async function AdAccounts() {
                 <TableCell>
                   <HealthBadge health={a.health} />
                 </TableCell>
-                <TableCell className="pr-5">
-                  {formatDateTime(a.lastSuccessAt, data.organizationTimezone)}
-                </TableCell>
+                <TableCell>{formatDateTime(a.lastSuccessAt, data.organizationTimezone)}</TableCell>
+                {editable ? (
+                  <TableCell className="pr-5 text-right">
+                    <SyncNowButton accountId={a.id} accountName={a.name} />
+                  </TableCell>
+                ) : null}
               </TableRow>
             ))}
           </TableBody>

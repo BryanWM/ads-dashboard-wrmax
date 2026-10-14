@@ -85,6 +85,20 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   (a Meta só deduplica dentro de uma conta). A troca "Visualizar como cliente" existe só
   no modo demonstração; no modo Supabase a agência precisará de um login de cliente.
 
+## ADR-011 — Meta via token de usuário do sistema colado pela agência
+
+- **Contexto**: o produto é usado pela agência com as contas que ela já gerencia no
+  Business Manager; Facebook Login for Business exige App Review e verificação da empresa.
+- **Decisão**: a agência gera um token de **usuário do sistema** (`ads_read`) e cola em
+  Administração → Integrações. O servidor confere com a Meta (`/me`, `/me/permissions`),
+  cifra (ADR-004) e descobre as contas (`/me/adaccounts`). O token só trafega no header
+  `Authorization`; `appsecret_proof` é enviado quando `META_APP_SECRET` existe.
+  **Resultado** de cada campanha = um evento escolhido pelo objetivo a partir de `actions`
+  (variantes duplicadas do mesmo evento nunca são somadas) — `src/lib/meta/results.ts`.
+- **Consequências**: sem autoatendimento de clientes (fica para o Login for Business). A
+  mesma `TOKEN_ENCRYPTION_KEY` precisa existir em todo ambiente que usa o mesmo banco. A
+  regra de resultado é conferida com o Gerenciador de Anúncios antes de fechar a Fase 6.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.

@@ -18,16 +18,23 @@ import type { ConnectionStatus } from "@/lib/domain/admin-types";
 import { formatDateTime } from "@/lib/format";
 import { loadAdminOverview } from "@/server/data/admin";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { isDemoMode } from "@/server/auth/session";
+import { isTokenVaultConfigured } from "@/server/crypto/tokens";
+
 import {
   AdminAccessDenied,
   AdminSkeleton,
   AdminTableCard,
   DemoReadOnlyNotice,
-  MetaPendingNotice,
 } from "./_components/admin-ui";
-import { isDemoMode } from "@/server/auth/session";
+import { ConnectMetaDialog } from "./_components/connect-meta-dialog";
+import { RefreshAccountsButton } from "./_components/meta-buttons";
 
 export const metadata: Metadata = { title: "Integrações" };
+
+// Connecting validates the token and lists every ad account with Meta.
+export const maxDuration = 60;
 
 const CONNECTION_STATUS: Record<ConnectionStatus, string> = {
   active: "Ativa",
@@ -48,6 +55,8 @@ async function Integrations() {
   const data = await loadAdminOverview();
   if (!data) return <AdminAccessDenied />;
   const tz = data.organizationTimezone;
+  const editable = !isDemoMode();
+  const vaultReady = isTokenVaultConfigured();
   const failing = data.adAccounts.filter((a) => a.health === "failing");
   const unassigned = data.adAccounts.filter((a) => a.clientId === null);
   const healthy = data.adAccounts.filter((a) => a.health === "ok");
@@ -80,8 +89,18 @@ async function Integrations() {
         eyebrow="Administração"
         title="Integrações"
         description={`${data.organizationName} · status das conexões e das contas de anúncios`}
+        actions={editable && vaultReady ? <ConnectMetaDialog /> : null}
       />
-      {isDemoMode() ? <DemoReadOnlyNotice /> : <MetaPendingNotice />}
+      {editable ? null : <DemoReadOnlyNotice />}
+      {editable && !vaultReady ? (
+        <Alert role="alert">
+          <CircleAlertIcon />
+          <AlertDescription>
+            Falta a chave de criptografia do servidor (TOKEN_ENCRYPTION_KEY). Sem ela, a chave da
+            Meta não pode ser guardada com segurança e a conexão fica desativada.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-3">
         {stats.map(({ label, value, Icon, tone }) => (
@@ -99,15 +118,23 @@ async function Integrations() {
 
       {data.connections.map((c) => (
         <Card key={c.id}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <KeyRoundIcon className="size-4 text-muted-foreground" aria-hidden />
-              Meta Ads · {c.label}
-            </CardTitle>
-            <CardDescription>
-              Token de {c.tokenType === "system_user" ? "usuário do sistema" : "usuário"} armazenado
-              cifrado no servidor. O valor nunca é exibido.
-            </CardDescription>
+          <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1.5">
+              <CardTitle className="flex items-center gap-2">
+                <KeyRoundIcon className="size-4 text-muted-foreground" aria-hidden />
+                Meta Ads · {c.label}
+              </CardTitle>
+              <CardDescription>
+                Token de {c.tokenType === "system_user" ? "usuário do sistema" : "usuário"}{" "}
+                armazenado cifrado no servidor. O valor nunca é exibido.
+              </CardDescription>
+            </div>
+            {editable && vaultReady ? (
+              <div className="flex flex-wrap gap-2">
+                <RefreshAccountsButton connectionId={c.id} />
+                <ConnectMetaDialog reconnect />
+              </div>
+            ) : null}
           </CardHeader>
           <CardContent>
             <dl className="grid gap-4 text-sm sm:grid-cols-4">

@@ -61,7 +61,7 @@ export function AdsChampions({
                     alt=""
                     fill
                     sizes="48px"
-                    unoptimized={ad.thumbnailUrl.endsWith(".svg")}
+                    unoptimized
                     className="object-cover"
                   />
                 ) : null}
@@ -94,8 +94,9 @@ export function AdsChampions({
                       alt=""
                       fill
                       sizes="240px"
-                      // Demo artwork is SVG; real Meta thumbnails go through optimisation.
-                      unoptimized={ad.thumbnailUrl.endsWith(".svg")}
+                      // Meta thumbnails are small, signed and short-lived (fbcdn): load them
+                      // as-is instead of caching expiring URLs in the optimiser.
+                      unoptimized
                       className="object-cover"
                     />
                   ) : (

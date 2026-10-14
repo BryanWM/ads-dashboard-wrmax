@@ -32,6 +32,27 @@ no Business Manager próprio (que já tem acesso às contas dos clientes como pa
 o cola num formulário admin protegido. Mais simples, sem App Review, mas não escala para
 autoatendimento — fica documentado como caminho de bootstrap.
 
+## Implementação (Fase 6)
+
+| Peça                      | Onde                                                                        |
+| ------------------------- | --------------------------------------------------------------------------- |
+| Cofre do token (AES-GCM)  | `src/lib/crypto/token-cipher.ts`, `src/server/crypto`                       |
+| Cliente Graph API         | `src/server/integrations/meta/client.ts` (+ `api.ts`)                       |
+| Resultado por campanha    | `src/lib/meta/results.ts`                                                   |
+| Linha de insights → banco | `src/lib/meta/insights.ts`                                                  |
+| Erros e limites           | `src/lib/meta/errors.ts`, `src/lib/meta/usage.ts`                           |
+| Janela de sincronização   | `src/lib/meta/sync-window.ts` (90 dias na 1ª vez; 28 depois; até ontem)     |
+| Motor por conta           | `src/server/sync/meta-account.ts`, `src/server/sync/run.ts`                 |
+| Telas                     | Integrações (conectar/trocar chave/atualizar contas), Contas (buscar dados) |
+
+Regra de **resultado**: a Meta repete o mesmo evento com nomes diferentes (`purchase`,
+`omni_purchase`, `offsite_conversion.fb_pixel_purchase`…) com o **mesmo valor**; usamos a
+primeira variante presente, nunca a soma. O evento vem do objetivo da campanha
+(Vendas → compra, ou conversa se for o que a campanha gerou; Cadastros → cadastro ou
+conversa; Engajamento → conversa; Tráfego → clique no link; Reconhecimento → sem
+resultado). Com evento definido, ausência no dia = 0; sem evento, `null`.
+**A conferir com o Gerenciador de Anúncios** na primeira conta real.
+
 ## Consulta de métricas
 
 - Endpoint: `GET /{act_id}/insights` com `level=campaign`, `time_increment=1`,

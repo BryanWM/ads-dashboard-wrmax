@@ -21,18 +21,6 @@ export function DemoReadOnlyNotice() {
   );
 }
 
-/** Meta connection is Phase 6: say so where it matters, without fake buttons. */
-export function MetaPendingNotice() {
-  return (
-    <Alert>
-      <InfoIcon />
-      <AlertDescription>
-        A conexão real com a Meta chega na Fase 6. Até lá, as contas listadas são de demonstração.
-      </AlertDescription>
-    </Alert>
-  );
-}
-
 export function AdminTableCard({
   title,
   description,
