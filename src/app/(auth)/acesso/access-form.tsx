@@ -47,8 +47,8 @@ export function AccessForm({
             <FieldError>{errors.password}</FieldError>
           ) : (
             <FieldDescription id="password-help">
-              Pelo menos {MIN_PASSWORD_LENGTH} caracteres. Dica: use uma frase fácil de lembrar,
-              como “pizza de quinta com amigos”.
+              Pelo menos {MIN_PASSWORD_LENGTH} caracteres, com letra maiúscula, letra minúscula,
+              número e símbolo (como ! @ # ou *).
             </FieldDescription>
           )}
         </Field>

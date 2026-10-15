@@ -76,16 +76,30 @@ describe("client access form", () => {
 });
 
 describe("password", () => {
-  it("requires 15+ characters (NIST 800-63B rev. 4) and a matching confirmation", () => {
-    expect(passwordSchema.safeParse({ password: "curta", confirm: "curta" }).success).toBe(false);
-    // 13 characters: the old 8-minimum accepted it, single-factor now needs 15.
-    expect(
-      passwordSchema.safeParse({ password: "senha-boa-123", confirm: "senha-boa-123" }).success,
-    ).toBe(false);
-    const phrase = "pizza de quinta com amigos";
-    const r = passwordSchema.safeParse({ password: phrase, confirm: "outra frase qualquer" });
+  it("requires 8+ characters with uppercase, lowercase, digit and symbol (same as Supabase)", () => {
+    const check = (password: string) => passwordSchema.safeParse({ password, confirm: password });
+    expect(check("Cur1a!").success).toBe(false); // too short
+    const noUpper = check("senha-boa-123");
+    expect(noUpper.success).toBe(false);
+    if (!noUpper.success) {
+      expect(fieldErrors(noUpper.error).password).toBe("Inclua pelo menos uma letra maiúscula.");
+    }
+    expect(check("SENHA-BOA-123").success).toBe(false); // no lowercase
+    expect(check("Senha-Boa-sem").success).toBe(false); // no digit
+    const noSymbol = check("SenhaBoa123");
+    expect(noSymbol.success).toBe(false);
+    if (!noSymbol.success) {
+      expect(fieldErrors(noSymbol.error).password).toBe(
+        "Inclua pelo menos um símbolo, como ! @ # $ ou *.",
+      );
+    }
+    // Accents and spaces are not symbols for Supabase, so they do not count here either.
+    expect(check("Senha Boa 123é").success).toBe(false);
+    expect(check("Senha-Boa-123").success).toBe(true);
+    expect(check("Pizza@2026").success).toBe(true);
+
+    const r = passwordSchema.safeParse({ password: "Senha-Boa-123", confirm: "Outra-123" });
     expect(r.success).toBe(false);
     if (!r.success) expect(fieldErrors(r.error).confirm).toBe("As senhas não são iguais.");
-    expect(passwordSchema.safeParse({ password: phrase, confirm: phrase }).success).toBe(true);
   });
 });

@@ -57,18 +57,30 @@ export function readClientAccessForm(form: FormData) {
 }
 
 /**
- * New passwords (client logins are single-factor): NIST SP 800-63B rev. 4 asks for at
- * least 15 characters, no composition rules and no forced rotation. A short phrase is
- * easy to remember and meets it. 72 = bcrypt's byte limit in Supabase Auth.
+ * New passwords: 8+ characters with an uppercase letter, a lowercase letter, a digit and
+ * a symbol (agency's choice, 16/10/2026 — NIST 800-63B rev. 4 would prefer 15+ without
+ * composition rules; see docs/seguranca.md). Must match Supabase's own setting
+ * ("Lowercase, uppercase letters, digits and symbols"). 72 = bcrypt's byte limit.
  */
-export const MIN_PASSWORD_LENGTH = 15;
+export const MIN_PASSWORD_LENGTH = 8;
+
+/** The symbols Supabase Auth counts (anything else, like "é" or a space, does not). */
+export const PASSWORD_SYMBOLS = "!@#$%^&*()_+-=[]{};'\\:\"|<>?,./`~";
+
+function hasSymbol(value: string): boolean {
+  return [...value].some((char) => PASSWORD_SYMBOLS.includes(char));
+}
 
 export const passwordSchema = z
   .object({
     password: z
       .string()
       .min(MIN_PASSWORD_LENGTH, `Use pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`)
-      .max(72, "Use no máximo 72 caracteres."),
+      .max(72, "Use no máximo 72 caracteres.")
+      .regex(/[a-z]/, "Inclua pelo menos uma letra minúscula.")
+      .regex(/[A-Z]/, "Inclua pelo menos uma letra maiúscula.")
+      .regex(/[0-9]/, "Inclua pelo menos um número.")
+      .refine(hasSymbol, "Inclua pelo menos um símbolo, como ! @ # $ ou *."),
     confirm: z.string(),
   })
   .refine((v) => v.password === v.confirm, {

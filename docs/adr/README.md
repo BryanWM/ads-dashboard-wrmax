@@ -165,8 +165,8 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   (revisão de segurança, risco nº 1). Foi implementado TOTP obrigatório (aal2 exigido no
   banco e tela `/mfa`) e **retirado em 16/10/2026 a pedido do usuário**, para manter o
   acesso simples no início.
-- **Decisão**: sem MFA por enquanto. Compensações: senha nova com 15+ caracteres
-  (NIST 800-63B rev. 4), cadastro público desligado, limite de tentativas no Firewall da
+- **Decisão**: sem MFA por enquanto. Compensações: senha nova com 8+ caracteres,
+  maiúscula, minúscula, número e símbolo (escolha da agência), cadastro público desligado, limite de tentativas no Firewall da
   Vercel e alertas de `login.failed` (`docs/seguranca.md`).
 - **Consequências**: risco aceito e registrado. Reavaliar antes de crescer o número de
   admins ou de clientes; a implementação de referência está no commit `3cd7b45`

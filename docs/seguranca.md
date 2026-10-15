@@ -9,7 +9,7 @@ adiado). Este documento tem três partes: o que o código já faz, **o que preci
 
 | Risco da revisão                                | Correção                                                                                                                                | Onde                                                   | Validado                                     |
 | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------- |
-| Senha curta para login de fator único           | Mínimo de **15** caracteres em senhas novas, sem regra de composição, com dica de frase                                                 | `src/lib/admin/schemas.ts`, tela `/acesso`             | teste unitário                               |
+| Senha fraca para login de fator único           | Senhas novas com **8+** caracteres, letra maiúscula, minúscula, número e símbolo (escolha da agência; a NIST preferiria 15+ sem regras) | `src/lib/admin/schemas.ts`, tela `/acesso`             | teste unitário                               |
 | Cookie de sessão legível por JavaScript         | `HttpOnly` + `Secure` (produção) + `SameSite=Lax`                                                                                       | `src/lib/supabase/config.ts`, proxy e cliente servidor | typecheck; conferir no navegador (checklist) |
 | Token Meta sem vínculo com a conexão (L4)       | AAD = id da conexão; token copiado para outra conexão não abre                                                                          | `src/lib/crypto/token-cipher.ts`                       | teste unitário                               |
 | Rotação de chave exigia reconectar a Meta       | Chaveiro com versão atual + anterior; cada token é recifrado com a chave nova na próxima leitura                                        | `src/server/crypto/tokens.ts`                          | teste unitário                               |
@@ -51,7 +51,8 @@ para a conta da empresa (junto com `go-live.md`). **C** é rotina.
 
 1. **Supabase → Authentication → Sign In / Providers**:
    - desligar **Allow new users to sign up** e **Anonymous sign-ins**;
-   - **Minimum password length: 15**, sem exigência de tipos de caractere;
+   - provedor **Email** → **Minimum password length: 8** e **Password requirements:
+     Lowercase, uppercase letters, digits and symbols** (igual à regra do app);
    - **Leaked password protection**: ligar (exige plano Pro; anotar se não houver).
 2. **Supabase → sessões/JWT**: _access token expiry_ (JWT expiry) = **900 segundos**. Se o
    plano permitir: _inactivity timeout_ 7 dias e _time-box_ 30 dias.
@@ -77,7 +78,7 @@ para a conta da empresa (junto com `go-live.md`). **C** é rotina.
    logs). Repetir os passos 1–5 no projeto de produção. **Log drain** (Vercel →
    Integrations: Better Stack, Axiom ou Datadog) com retenção de 90 dias e os alertas da
    seção 4 — sem MFA, é o alerta de tentativas que avisa de um ataque à senha do admin.
-10. Senhas de admin com 15+ caracteres, guardadas no gerenciador de senhas da empresa;
+10. Senhas de admin longas (recomendado 15+, mesmo com o mínimo de 8), guardadas no gerenciador de senhas da empresa;
     cada pessoa com o próprio login (nunca login compartilhado).
 11. LGPD (seção 5): aviso de privacidade e termos revisados por advogado, DPAs da Supabase
     e da Vercel aceitos, cláusula de operador no contrato com os clientes.

@@ -19,9 +19,11 @@ novo na conta da empresa. Nada de produção deve passar pelo computador de dese
    `supabase/migrations` em ordem e depois `supabase/tests/rls_isolation.sql`, que deve
    terminar com "OK".
 2. Criar o usuário administrador (Authentication → Add user, Auto Confirm), com senha de
-   15+ caracteres. Em **Authentication → Sign In / Providers**: desligar
-   **Allow new users to sign up** e **Anonymous sign-ins** e definir **senha mínima de 15
-   caracteres** (igual à regra do app). Checklist completo: `docs/seguranca.md` (parte B).
+   15+ caracteres (o mínimo do app é 8 com maiúscula, minúscula, número e símbolo). Em
+   **Authentication → Sign In / Providers**: desligar
+   **Allow new users to sign up** e **Anonymous sign-ins**; no provedor Email, **senha
+   mínima de 8** e **Lowercase, uppercase letters, digits and symbols** (igual à regra do app).
+   Checklist completo: `docs/seguranca.md` (parte B).
 3. Rodar `pnpm db:seed --admin-email <e-mail> --no-demo` com as variáveis da empresa **só
    para este comando**. Ele cria a agência e o administrador, sem dados de demonstração.
    Depois, apagar essas variáveis da máquina.
