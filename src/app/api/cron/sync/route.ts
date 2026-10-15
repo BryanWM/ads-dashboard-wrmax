@@ -1,4 +1,5 @@
 import { isCronAuthorized } from "@/lib/sync/cron-auth";
+import { securityEvent } from "@/server/security/log";
 import { runScheduledSync } from "@/server/sync/scheduler";
 
 // Vercel Hobby allows up to 300 s; the budget below leaves room for the last account.
@@ -10,6 +11,7 @@ export async function GET(request: Request) {
   // Read the request first: it marks the handler dynamic (never prerendered).
   const authorization = request.headers.get("authorization");
   if (!isCronAuthorized(authorization, process.env.CRON_SECRET)) {
+    securityEvent("cron.unauthorized", { withHeader: authorization !== null });
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
 

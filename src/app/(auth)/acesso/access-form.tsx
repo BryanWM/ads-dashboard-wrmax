@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { MIN_PASSWORD_LENGTH } from "@/lib/admin/schemas";
 import { acceptAccess, type AcceptAccessState } from "@/server/auth/accept-access";
 
 export function AccessForm({
@@ -45,7 +46,10 @@ export function AccessForm({
           {errors.password ? (
             <FieldError>{errors.password}</FieldError>
           ) : (
-            <FieldDescription id="password-help">Pelo menos 8 caracteres.</FieldDescription>
+            <FieldDescription id="password-help">
+              Pelo menos {MIN_PASSWORD_LENGTH} caracteres. Dica: use uma frase fácil de lembrar,
+              como “pizza de quinta com amigos”.
+            </FieldDescription>
           )}
         </Field>
         <Field data-invalid={!!errors.confirm || undefined}>

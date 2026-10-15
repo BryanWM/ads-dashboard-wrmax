@@ -1,0 +1,18 @@
+# Dependency updates (SCA). Security fixes open PRs right away; routine updates weekly,
+# grouped so they arrive as one PR per ecosystem. Policy: docs/seguranca.md.
+version: 2
+updates:
+  - package-ecosystem: npm # pnpm-lock.yaml is supported under "npm"
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      dependencias:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

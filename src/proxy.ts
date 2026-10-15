@@ -1,9 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { supabasePublicConfig } from "@/lib/supabase/config";
+import { SESSION_COOKIE_OPTIONS, supabasePublicConfig } from "@/lib/supabase/config";
 
-const PROTECTED = ["/dashboard", "/campaigns", "/admin"];
+const PROTECTED = ["/dashboard", "/campaigns", "/admin", "/mfa"];
 
 /**
  * Refreshes the Supabase session cookie and does OPTIMISTIC redirects only:
@@ -16,6 +16,7 @@ export async function proxy(request: NextRequest) {
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(config.url, config.publishableKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(list) {

@@ -5,7 +5,9 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { emailFingerprint } from "@/lib/security/events";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { securityEvent } from "@/server/security/log";
 import { createUserSupabase } from "@/server/supabase/server";
 
 const schema = z.object({
@@ -36,9 +38,12 @@ export async function signIn(_prev: SignInState, form: FormData): Promise<SignIn
 
   const supabase = await createUserSupabase();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  // Fingerprint, never the e-mail: repeated attempts show up in the log drain (alerts).
+  const who = { email: emailFingerprint(parsed.data.email) };
   if (error) {
     // The error object may carry details; only a neutral message reaches the browser.
     const tooMany = error.status === 429;
+    securityEvent(tooMany ? "login.rate_limited" : "login.failed", who);
     return {
       email,
       formError: tooMany
@@ -46,5 +51,6 @@ export async function signIn(_prev: SignInState, form: FormData): Promise<SignIn
         : "E-mail ou senha incorretos.",
     };
   }
+  securityEvent("login.succeeded", who);
   redirect("/dashboard");
 }

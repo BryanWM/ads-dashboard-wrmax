@@ -112,6 +112,9 @@
   --atencao: #e7b45a;
   --erro: #ff6b8a;
 
+  /* Same in both themes: QR codes must be dark modules on a light field to scan. */
+  --qr-fundo: #f6f1e6;
+
   /* Theme-dependent accents (gold glass, text on gold glass, chrome, scrim). */
   --ouro-rgb: 232 199 122;
   --ouro-texto: var(--ouro);
@@ -292,6 +295,10 @@
 }
 
 /* Active item / chip-ouro: gold glass, never full gold. */
+@utility qr-fundo {
+  background-color: var(--qr-fundo);
+}
+
 @utility chip-ouro {
   background-color: rgb(var(--ouro-rgb) / 0.1);
   border: 1px solid rgb(var(--ouro-rgb) / 0.35);

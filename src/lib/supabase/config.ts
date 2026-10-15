@@ -14,6 +14,20 @@ export function supabasePublicConfig(): SupabasePublicConfig | null {
   return url && publishableKey ? { url, publishableKey } : null;
 }
 
+/**
+ * Session cookie flags (revisão de segurança). The browser never talks to Supabase
+ * directly, so the session cookie does not need to be readable by JavaScript:
+ * HttpOnly keeps a future XSS from stealing it; HTTPS-only outside local development.
+ * The cookie lifetime is fixed by @supabase/ssr (it overrides maxAge); how long a
+ * session really lasts is set in Supabase (Auth → Sessions), see docs/seguranca.md.
+ */
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/",
+} as const;
+
 export function isSupabaseConfigured(): boolean {
   return supabasePublicConfig() !== null;
 }

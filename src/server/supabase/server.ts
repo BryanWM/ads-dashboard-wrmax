@@ -3,7 +3,7 @@ import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-import { supabasePublicConfig } from "@/lib/supabase/config";
+import { SESSION_COOKIE_OPTIONS, supabasePublicConfig } from "@/lib/supabase/config";
 
 /**
  * Supabase client acting AS the signed-in user (their JWT → RLS applies).
@@ -14,6 +14,7 @@ export async function createUserSupabase() {
   if (!config) throw new Error("Supabase is not configured");
   const store = await cookies();
   return createServerClient(config.url, config.publishableKey, {
+    cookieOptions: SESSION_COOKIE_OPTIONS,
     cookies: {
       getAll: () => store.getAll(),
       setAll(list) {

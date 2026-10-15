@@ -76,13 +76,16 @@ describe("client access form", () => {
 });
 
 describe("password", () => {
-  it("requires 8+ characters and a matching confirmation", () => {
+  it("requires 15+ characters (NIST 800-63B rev. 4) and a matching confirmation", () => {
     expect(passwordSchema.safeParse({ password: "curta", confirm: "curta" }).success).toBe(false);
-    const r = passwordSchema.safeParse({ password: "senha-boa-123", confirm: "outra-123" });
-    expect(r.success).toBe(false);
-    if (!r.success) expect(fieldErrors(r.error).confirm).toBe("As senhas não são iguais.");
+    // 13 characters: the old 8-minimum accepted it, single-factor now needs 15.
     expect(
       passwordSchema.safeParse({ password: "senha-boa-123", confirm: "senha-boa-123" }).success,
-    ).toBe(true);
+    ).toBe(false);
+    const phrase = "pizza de quinta com amigos";
+    const r = passwordSchema.safeParse({ password: phrase, confirm: "outra frase qualquer" });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(fieldErrors(r.error).confirm).toBe("As senhas não são iguais.");
+    expect(passwordSchema.safeParse({ password: phrase, confirm: phrase }).success).toBe(true);
   });
 });

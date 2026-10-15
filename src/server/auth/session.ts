@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
 
+import { adminNeedsMfa } from "@/lib/auth/mfa";
 import type { Viewer } from "@/lib/domain/access";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createUserSupabase } from "@/server/supabase/server";
@@ -82,13 +83,18 @@ async function supabaseViewer(): Promise<Viewer> {
     supabase.from("profiles").select("full_name").eq("id", claims.sub).maybeSingle(),
   ]);
 
+  const role = membership?.role === "admin" ? "admin" : "client";
+  // ADR-016: an admin session without the second factor sees nothing (the database
+  // enforces it too); send the person to confirm or set up the authenticator app.
+  if (adminNeedsMfa(role, claims.aal)) redirect("/mfa");
+
   const email = typeof claims.email === "string" ? claims.email : "";
   return {
     id: claims.sub,
     name: profile?.full_name ?? email,
     email,
     // Without a membership the person sees nothing (role client + no client).
-    role: membership?.role === "admin" ? "admin" : "client",
+    role,
     organizationId: membership?.organization_id ?? null,
     clientId: membership?.client_id ?? null,
   };

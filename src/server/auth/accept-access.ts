@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { fieldErrors, passwordSchema } from "@/lib/admin/schemas";
+import { securityEvent } from "@/server/security/log";
 import { createUserSupabase } from "@/server/supabase/server";
 
 export interface AcceptAccessState {
@@ -44,6 +45,7 @@ export async function acceptAccess(
     token_hash: token.data.tokenHash,
   });
   if (verifyError) {
+    securityEvent("access.link_rejected", { type: token.data.type });
     return { formError: "Este link expirou ou já foi usado. Peça um novo link à sua agência." };
   }
 
@@ -56,5 +58,6 @@ export async function acceptAccess(
         : "Não foi possível salvar a senha. Tente novamente.",
     };
   }
+  securityEvent("access.password_set", { type: token.data.type });
   redirect("/dashboard");
 }
