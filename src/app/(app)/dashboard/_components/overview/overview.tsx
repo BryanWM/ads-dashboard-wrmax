@@ -31,7 +31,6 @@ interface OverviewProps {
   data: DashboardData;
   campaigns: CampaignRow[];
   preset: PeriodPreset | null;
-  today: string;
 }
 
 function Panel({
@@ -56,7 +55,7 @@ function Panel({
  * From `lg` it becomes a bento grid: summary, 4 numbers, main chart, funnel and
  * champions visible at once; details below. Layout is CSS-only (no shift).
  */
-export function Overview({ data, campaigns, preset, today }: OverviewProps) {
+export function Overview({ data, campaigns, preset }: OverviewProps) {
   const model = buildOverview(data, preset);
   const [openMetric, setOpenMetric] = useState<CardMetric | null>(null);
   const [tab, setTab] = useState<Tab>("funil");
@@ -72,7 +71,7 @@ export function Overview({ data, campaigns, preset, today }: OverviewProps) {
     currency,
   };
   const champions = <AdsChampions {...championsProps} />;
-  const details = <DetailsPanel data={data} model={model} preset={preset} today={today} />;
+  const details = <DetailsPanel data={data} model={model} />;
 
   return (
     <div className="grid gap-5 lg:grid-cols-4 lg:gap-4">

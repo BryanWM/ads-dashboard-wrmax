@@ -3,16 +3,21 @@ import type { ReactNode } from "react";
 import { SimulatedDataBadge } from "@/components/feedback/simulated-data-badge";
 import { SyncStatusLine } from "@/components/feedback/sync-status";
 import { PeriodChips } from "@/components/filters/period-chips";
-import type { PeriodPreset } from "@/lib/dates/periods";
+import { PeriodPicker } from "@/components/filters/period-picker";
+import { isChipPreset } from "@/lib/dates/period-params";
+import type { DateRange, PeriodPreset } from "@/lib/dates/periods";
 import type { SyncStatus } from "@/lib/domain/types";
 
 /**
- * Fixed, compact header: client name, when the data was last updated, and the
- * period chips. Sticks below the top bar (h-14) so the period is one tap away.
+ * Fixed, compact header: client name, when the data was last updated, the period
+ * chips and the calendar for any other period. Sticks below the top bar (h-14) so
+ * the period is one tap away.
  */
 export function DashboardHeader({
   clientName,
   preset,
+  range,
+  today,
   sync,
   timeZone,
   simulated = false,
@@ -20,6 +25,9 @@ export function DashboardHeader({
 }: {
   clientName: string;
   preset: PeriodPreset | null;
+  range: DateRange;
+  /** Latest selectable day for the custom period (account timezone). */
+  today: string;
   sync: SyncStatus | null;
   timeZone: string;
   /** This client's numbers are simulated (demo client in Supabase mode). */
@@ -40,7 +48,16 @@ export function DashboardHeader({
       </div>
       <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
         {accountFilter}
-        <PeriodChips preset={preset} />
+        <div className="flex items-center gap-2">
+          <PeriodChips preset={preset} className="min-w-0 flex-1" />
+          <PeriodPicker
+            variant="chip"
+            active={!isChipPreset(preset)}
+            preset={preset}
+            range={range}
+            today={today}
+          />
+        </div>
       </div>
     </header>
   );

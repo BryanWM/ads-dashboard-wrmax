@@ -28,6 +28,13 @@ interface PeriodPickerProps {
   range: DateRange;
   /** Latest selectable day (account timezone). */
   today: string;
+  /**
+   * "chip": calendar button beside the period chips (overview header). Icon only while
+   * a chip is selected; gold glass + the range (from `lg`) when a custom period is on.
+   */
+  variant?: "default" | "chip";
+  /** chip variant: the current period is NOT one of the chips. */
+  active?: boolean;
 }
 
 // Calendar works with local Date objects; our ranges are calendar strings.
@@ -41,7 +48,13 @@ function toIso(date: Date) {
   return `${date.getFullYear()}-${m}-${d}`;
 }
 
-export function PeriodPicker({ preset, range, today }: PeriodPickerProps) {
+export function PeriodPicker({
+  preset,
+  range,
+  today,
+  variant = "default",
+  active = false,
+}: PeriodPickerProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { navigate, isPending } = useNavigationPending();
@@ -71,16 +84,32 @@ export function PeriodPicker({ preset, range, today }: PeriodPickerProps) {
         if (next) setDraft({ from: toDate(range.from), to: toDate(range.to) });
       }}
     >
-      <PopoverTrigger
-        render={
-          <Button variant="outline" className="h-11 lg:h-9" aria-label={`Período: ${label}`} />
-        }
-        data-pending={isPending || undefined}
-      >
-        <CalendarIcon data-icon="inline-start" />
-        <span className="max-w-48 truncate">{label}</span>
-        <ChevronDownIcon data-icon="inline-end" className="text-muted-foreground" />
-      </PopoverTrigger>
+      {variant === "chip" ? (
+        <PopoverTrigger
+          render={
+            <Button
+              variant="outline"
+              className={cn("h-11 shrink-0 px-3.5 lg:h-9", active && "chip-ouro")}
+              aria-label={active ? `Período: ${label}. Escolher outro` : "Escolher outro período"}
+            />
+          }
+          data-pending={isPending || undefined}
+        >
+          <CalendarIcon />
+          {active ? <span className="hidden max-w-48 truncate lg:inline">{label}</span> : null}
+        </PopoverTrigger>
+      ) : (
+        <PopoverTrigger
+          render={
+            <Button variant="outline" className="h-11 lg:h-9" aria-label={`Período: ${label}`} />
+          }
+          data-pending={isPending || undefined}
+        >
+          <CalendarIcon data-icon="inline-start" />
+          <span className="max-w-48 truncate">{label}</span>
+          <ChevronDownIcon data-icon="inline-end" className="text-muted-foreground" />
+        </PopoverTrigger>
+      )}
       <PopoverContent align="end" className="w-auto max-w-[calc(100vw-2rem)] p-0">
         <div className="flex flex-col sm:flex-row">
           <ul className="flex flex-row flex-wrap gap-1 border-b p-2 sm:w-44 sm:flex-col sm:border-r sm:border-b-0">

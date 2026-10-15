@@ -39,6 +39,8 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/dashboard">, "search
       <DashboardHeader
         clientName={client.name}
         preset={selection.preset}
+        range={selection.range}
+        today={today}
         sync={data.sync}
         timeZone={data.client.timezone}
         // Demo mode already badges the whole app in the top bar.
@@ -50,12 +52,7 @@ async function Dashboard({ searchParams }: Pick<PageProps<"/dashboard">, "search
       ) : (
         <>
           <SyncFailureAlert sync={data.sync} timeZone={data.client.timezone} audience={audience} />
-          <Overview
-            data={data}
-            campaigns={campaigns.campaigns}
-            preset={selection.preset}
-            today={today}
-          />
+          <Overview data={data} campaigns={campaigns.campaigns} preset={selection.preset} />
         </>
       )}
     </div>

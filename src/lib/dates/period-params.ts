@@ -26,6 +26,14 @@ export const PRESET_LABELS: Record<PeriodPreset, string> = {
   last_month: "Mês anterior",
 };
 
+/** Presets offered as chips in the overview header; anything else is the calendar. */
+export const CHIP_PRESETS = ["last_7d", "last_30d", "this_month"] as const;
+export type ChipPreset = (typeof CHIP_PRESETS)[number];
+
+export function isChipPreset(preset: PeriodPreset | null): preset is ChipPreset {
+  return (CHIP_PRESETS as readonly string[]).includes(preset ?? "");
+}
+
 export interface PeriodSelection {
   /** null for custom ranges (deduplicated reach is only stored for presets). */
   preset: PeriodPreset | null;

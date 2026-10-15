@@ -3,21 +3,23 @@
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { useNavigationPending } from "@/components/layout/navigation-pending";
-import { withPeriod } from "@/lib/dates/period-params";
+import { CHIP_PRESETS, isChipPreset, withPeriod, type ChipPreset } from "@/lib/dates/period-params";
 import type { PeriodPreset } from "@/lib/dates/periods";
 import { cn } from "@/lib/utils";
 
 import { SegmentedControl, type SegmentOption } from "./segmented-control";
 
-type ChipPreset = Extract<PeriodPreset, "last_7d" | "last_30d" | "this_month">;
+const CHIP_LABELS: Record<ChipPreset, string> = {
+  last_7d: "7 dias",
+  last_30d: "30 dias",
+  this_month: "Mês atual",
+};
+const CHIPS: SegmentOption<ChipPreset>[] = CHIP_PRESETS.map((value) => ({
+  value,
+  label: CHIP_LABELS[value],
+}));
 
-const CHIPS: SegmentOption<ChipPreset>[] = [
-  { value: "last_7d", label: "7 dias" },
-  { value: "last_30d", label: "30 dias" },
-  { value: "this_month", label: "Mês atual" },
-];
-
-/** The three periods a client actually uses. Other ranges live in "Detalhes". */
+/** The three periods a client actually uses. Other ranges: the calendar button beside them. */
 export function PeriodChips({
   preset,
   className,
@@ -28,7 +30,7 @@ export function PeriodChips({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { navigate } = useNavigationPending();
-  const value = CHIPS.some((c) => c.value === preset) ? (preset as ChipPreset) : null;
+  const value = isChipPreset(preset) ? preset : null;
 
   return (
     <SegmentedControl

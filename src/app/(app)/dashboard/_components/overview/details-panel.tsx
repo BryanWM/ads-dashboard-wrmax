@@ -1,9 +1,7 @@
 import { PartialPeriodNote, SyncStatusLine } from "@/components/feedback/sync-status";
-import { PeriodPicker } from "@/components/filters/period-picker";
 import { DeltaIndicator } from "@/components/metrics/delta-indicator";
-import type { PeriodPreset } from "@/lib/dates/periods";
 import type { DashboardData } from "@/lib/domain/types";
-import { formatMetricValue } from "@/lib/format";
+import { formatDateRange, formatMetricValue } from "@/lib/format";
 import { METRICS, type MetricKey } from "@/lib/metrics/definitions";
 import { percentChange } from "@/lib/metrics/derive";
 import { resultLabel } from "@/lib/metrics/result-types";
@@ -25,8 +23,6 @@ const TECHNICAL: MetricKey[] = [
 interface DetailsPanelProps {
   data: DashboardData;
   model: OverviewModel;
-  preset: PeriodPreset | null;
-  today: string;
   className?: string;
 }
 
@@ -40,7 +36,7 @@ function Block({ title, children }: { title: string; children: React.ReactNode }
 }
 
 /** Everything technical that left the overview, in one place. */
-export function DetailsPanel({ data, model, preset, today, className }: DetailsPanelProps) {
+export function DetailsPanel({ data, model, className }: DetailsPanelProps) {
   const currency = data.client.currency;
   const now = data.current.metrics;
   const before = data.previous.metrics;
@@ -108,7 +104,10 @@ export function DetailsPanel({ data, model, preset, today, className }: DetailsP
       </div>
 
       <Block title="Período e atualização">
-        <PeriodPicker preset={preset} range={data.range} today={today} />
+        {/* The period is chosen in the header (chips + calendar); here it is only shown. */}
+        <p className="text-[13px] text-texto figures-tabular">
+          Período: <strong className="font-semibold">{formatDateRange(data.range)}</strong>
+        </p>
         <SyncStatusLine sync={data.sync} timeZone={data.client.timezone} />
         <PartialPeriodNote
           partial={data.partial}

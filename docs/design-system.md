@@ -84,7 +84,8 @@ está dando resultado?"_. Código em `src/app/(app)/dashboard/_components/overvi
 lógica de apresentação (pura, testada) em `src/lib/overview/`.
 
 **Hierarquia**: cabeçalho fixo (cliente, "Atualizado em…", chips 7 dias · 30 dias · Mês
-atual) → frase-resumo por template → 4 números em 2×2 → abas Funil · Anúncios · Detalhes.
+atual + botão de calendário para outro período, em vidro dourado quando ativo) →
+frase-resumo por template → 4 números em 2×2 → abas Funil · Anúncios · Detalhes.
 No desktop (≥ 1024 px) vira grade bento com gráfico principal, funil e campeões sem rolar.
 
 **Regras**
