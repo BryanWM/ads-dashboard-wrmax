@@ -1,5 +1,7 @@
 "use server";
 
+import "server-only";
+
 import { refresh } from "next/cache";
 import { z } from "zod";
 

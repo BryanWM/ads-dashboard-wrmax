@@ -33,7 +33,8 @@ export function WeekdayHeatmap({
               className="flex aspect-[3/4] flex-col items-center justify-center gap-1 rounded-lg text-center sm:aspect-auto sm:h-16"
               style={{ backgroundColor: `rgb(var(--ouro-rgb) / ${0.06 + intensity * 0.5})` }}
             >
-              <span className="text-xs text-texto-apagado">{cell.label}</span>
+              {/* text-texto: the strongest gold cell drops texto-apagado below 4.5:1. */}
+              <span className="text-xs text-texto">{cell.label}</span>
               <span className="font-display text-sm font-bold text-texto figures-tabular">
                 {formatMetricValue(cell.results, "integer", { compact: true })}
               </span>

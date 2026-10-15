@@ -143,6 +143,21 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   mudar código. Com muitas contas, a primeira carga (90 dias) pode levar mais de um dia
   para completar todas.
 
+## ADR-015 — Cabeçalhos de segurança estáticos (CSP sem nonce)
+
+- **Contexto**: a revisão da Fase 8 apontou ausência de cabeçalhos (risco de clickjacking
+  nas telas de administração e no formulário de senha). Uma CSP com nonce exige ler o
+  request em toda página, o que desliga o Partial Prerendering.
+- **Decisão**: cabeçalhos estáticos em `next.config.ts` para todas as rotas:
+  `frame-ancestors 'none'` + `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`,
+  `Permissions-Policy`, HSTS e uma CSP (só em produção) com `script-src 'self'
+'unsafe-inline'` (payload RSC e script de tema), `connect-src 'self'` (o navegador nunca
+  fala direto com Supabase ou Meta) e `img-src https:` (miniaturas da Meta).
+- **Consequências**: proteção contra framing, injeção de `<base>`, plugins e envio de
+  formulário para fora, mas a CSP **não** barra script inline injetado — a defesa contra
+  XSS continua sendo o React (sem `dangerouslySetInnerHTML` com dado de usuário). Uma
+  integração que precise de outro domínio no navegador exige atualizar a CSP.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.

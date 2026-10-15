@@ -26,6 +26,8 @@ export function Sparkline({ values, width = 84, height = 28, className }: Sparkl
         height={height}
         data={data}
         margin={{ top: 2, right: 2, bottom: 2, left: 2 }}
+        // Decorative: no keyboard stop inside the aria-hidden wrapper.
+        accessibilityLayer={false}
       >
         <YAxis hide domain={["dataMin", "dataMax"]} />
         <Line

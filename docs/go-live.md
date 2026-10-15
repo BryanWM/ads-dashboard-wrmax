@@ -18,7 +18,10 @@ novo na conta da empresa. Nada de produção deve passar pelo computador de dese
 1. Criar o projeto Supabase da empresa. No SQL Editor, rodar todas as migrações de
    `supabase/migrations` em ordem e depois `supabase/tests/rls_isolation.sql`, que deve
    terminar com "OK".
-2. Criar o usuário administrador (Authentication → Add user, Auto Confirm).
+2. Criar o usuário administrador (Authentication → Add user, Auto Confirm). Em
+   **Authentication → Sign In / Providers**: desligar **Allow new users to sign up** e
+   **Anonymous sign-ins** (só a agência cria logins) e definir **senha mínima de 8
+   caracteres** (igual à regra do app). Fase 8, achado M2.
 3. Rodar `pnpm db:seed --admin-email <e-mail> --no-demo` com as variáveis da empresa **só
    para este comando**. Ele cria a agência e o administrador, sem dados de demonstração.
    Depois, apagar essas variáveis da máquina.
@@ -40,6 +43,15 @@ novo na conta da empresa. Nada de produção deve passar pelo computador de dese
 
    Guardar `TOKEN_ENCRYPTION_KEY` e `SUPABASE_SECRET_KEY` também no gerenciador de senhas
    da empresa.
+
+   Nunca cadastrar `DEMO_MODE` na produção: sem as variáveis do Supabase o site de produção
+   **para com erro** em vez de abrir a demonstração (Fase 8, L6).
+
+   **Limite de tentativas de login** (Fase 8, M1): o login roda no servidor, então o limite
+   do Supabase enxerga o IP da Vercel, não o de quem tenta. Em Vercel → Firewall → Rules,
+   criar uma regra **Rate limit**: requisições `POST` com caminho `/login` ou `/acesso`,
+   **10 por minuto por IP**, ação _Deny_ (429). Confirmar no painel se o plano da conta
+   inclui regras de rate limit; se não incluir, registrar o risco e reavaliar no plano Pro.
 
 5. Meta: **redefinir a chave secreta do app** se ela passou por máquina pessoal. Gerar um
    **token novo** do usuário do sistema com as contas dos clientes e colar **só no site de

@@ -30,6 +30,9 @@ sistema, dados importados e conferidos com o Gerenciador de Anúncios (investime
 resultados por tipo). Fase 7 implementada (ADR-014): cron diário em `/api/cron/sync`,
 interruptor de atualização diária por conta, backoff e desistência; testada localmente
 (401 sem chave; segunda chamada não repete). Falta validar na Vercel com `CRON_SECRET`.
+Fase 8 executada: relatório em `docs/validacao-fase-8.md` (acessibilidade, celular,
+desempenho, revisão de segurança; cabeçalhos ADR-015). Pendências de configuração no
+`go-live.md`.
 
 | Fase                 | Entregas                                                                                                | Critério de pronto                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |

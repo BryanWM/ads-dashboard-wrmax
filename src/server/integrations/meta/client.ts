@@ -127,6 +127,10 @@ export async function graphGetAll<T>(
     // without credentials; the token goes in the header again.
     if (next) {
       const nextUrl = new URL(next);
+      // The token is sent again with the next page: only ever to Meta's own host.
+      if (nextUrl.origin !== url.origin) {
+        throw new Error(`Unexpected pagination host: ${nextUrl.origin}`);
+      }
       nextUrl.searchParams.delete("access_token");
       nextUrl.searchParams.delete("appsecret_proof");
       url = nextUrl;

@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 /** Mirrors the overview's shape: header, sentence, 2x2 numbers, tabs. */
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-5" aria-busy aria-label="Carregando painel">
+    <div className="space-y-5" role="status" aria-busy aria-label="Carregando painel">
       <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <Skeleton className="h-7 w-52" />
         <Skeleton className="h-13 w-full rounded-lg sm:w-72" />

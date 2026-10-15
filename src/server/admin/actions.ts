@@ -1,5 +1,7 @@
 "use server";
 
+import "server-only";
+
 import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
@@ -199,8 +201,9 @@ export async function createClientAccess(
     });
     if (error || !data.user) {
       if (error?.status === 422 || /already/i.test(error?.message ?? "")) {
+        // Neutral on purpose: does not confirm whether the e-mail exists elsewhere.
         throw new AdminActionError(
-          "Este e-mail já tem login. Para trocar a senha, use “Novo link” na lista de acessos.",
+          "Não foi possível criar o acesso com este e-mail. Se a pessoa já está na lista de acessos, use “Novo link”.",
         );
       }
       throw new Error(error?.message ?? "generateLink returned no user");
@@ -246,6 +249,18 @@ async function clientMember(ctx: AdminContext, userId: string) {
     .eq("role", "client")
     .maybeSingle();
   if (!data) throw new AdminActionError("Acesso não encontrado.");
+  // Links and deletion act on the global login: refuse if it also belongs elsewhere.
+  const { count, error } = await createServiceSupabase()
+    .from("memberships")
+    .select("user_id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .neq("organization_id", ctx.organizationId);
+  if (error) throw new Error(error.message);
+  if ((count ?? 0) > 0) {
+    throw new AdminActionError(
+      "Este login também é usado fora da agência; não pode ser alterado aqui.",
+    );
+  }
   const profile = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
   const email = (profile as { email: string | null } | null)?.email;
   if (!email) throw new AdminActionError("Este acesso não tem e-mail cadastrado.");

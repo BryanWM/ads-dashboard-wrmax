@@ -33,7 +33,10 @@ export function sealToken(plain: string, key: Buffer, keyVersion: number): Seale
 
 /** Throws if the data was altered or the key is wrong (GCM authentication). */
 export function openToken(sealed: SealedToken, key: Buffer): string {
-  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(sealed.iv, "base64"));
+  // Full 16-byte tag only: Node would otherwise accept truncated tags.
+  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(sealed.iv, "base64"), {
+    authTagLength: 16,
+  });
   decipher.setAuthTag(Buffer.from(sealed.authTag, "base64"));
   return Buffer.concat([
     decipher.update(Buffer.from(sealed.ciphertext, "base64")),

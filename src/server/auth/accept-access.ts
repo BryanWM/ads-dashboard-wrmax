@@ -1,5 +1,7 @@
 "use server";
 
+import "server-only";
+
 import { redirect } from "next/navigation";
 import { z } from "zod";
 

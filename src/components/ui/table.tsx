@@ -5,7 +5,12 @@ import { cn } from "cn";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    // Focusable so keyboard users can scroll wide tables sideways on small screens.
+    <div
+      data-slot="table-container"
+      tabIndex={0}
+      className="relative w-full overflow-x-auto rounded-[inherit] outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-dourado"
+    >
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}

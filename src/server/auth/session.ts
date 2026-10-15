@@ -46,7 +46,18 @@ function isKind(value: string | undefined): value is DemoViewerKind {
   return (DEMO_VIEWERS as readonly string[]).includes(value ?? "");
 }
 
+/**
+ * Fail closed: a production deploy that lost its Supabase variables must not turn into
+ * an open demo with an "agency" switch. DEMO_MODE=1 allows a deliberate public demo.
+ */
+function assertDemoAllowed() {
+  if (process.env.VERCEL_ENV === "production" && process.env.DEMO_MODE !== "1") {
+    throw new Error("Supabase is not configured in production (demo mode is disabled).");
+  }
+}
+
 async function demoViewer(): Promise<Viewer> {
+  assertDemoAllowed();
   const value = (await cookies()).get(DEMO_VIEWER_COOKIE)?.value;
   return DEMO[isKind(value) ? value : "agency"];
 }
@@ -89,5 +100,7 @@ export const getViewer = cache(async (): Promise<Viewer> =>
 );
 
 export function isDemoMode(): boolean {
-  return !isSupabaseConfigured();
+  if (isSupabaseConfigured()) return false;
+  assertDemoAllowed();
+  return true;
 }

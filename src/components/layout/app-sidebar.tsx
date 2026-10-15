@@ -87,19 +87,22 @@ interface AppSidebarProps {
 export function AppSidebar({ clients, viewer, showAdmin, demo }: AppSidebarProps) {
   return (
     <Sidebar variant="inset" collapsible="icon">
-      <SidebarHeader className="gap-4">
-        <div className="px-2 pt-2 group-data-[collapsible=icon]:hidden">
-          <BrandLogo width={112} />
-        </div>
-        <ClientSwitcher clients={clients} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavGroup label={viewer.isAgency ? "Cliente" : "Relatórios"} items={CLIENT_NAV} />
-        {showAdmin ? <NavGroup label="Administração" items={ADMIN_NAV} /> : null}
-      </SidebarContent>
-      <SidebarFooter>
-        <UserMenu viewer={viewer} demo={demo} />
-      </SidebarFooter>
+      {/* Landmark for screen readers; `contents` keeps the sidebar's flex layout. */}
+      <nav aria-label="Menu principal" className="contents">
+        <SidebarHeader className="gap-4">
+          <div className="px-2 pt-2 group-data-[collapsible=icon]:hidden">
+            <BrandLogo width={112} />
+          </div>
+          <ClientSwitcher clients={clients} />
+        </SidebarHeader>
+        <SidebarContent>
+          <NavGroup label={viewer.isAgency ? "Cliente" : "Relatórios"} items={CLIENT_NAV} />
+          {showAdmin ? <NavGroup label="Administração" items={ADMIN_NAV} /> : null}
+        </SidebarContent>
+        <SidebarFooter>
+          <UserMenu viewer={viewer} demo={demo} />
+        </SidebarFooter>
+      </nav>
       <SidebarRail />
     </Sidebar>
   );

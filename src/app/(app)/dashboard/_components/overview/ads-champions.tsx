@@ -79,9 +79,12 @@ export function AdsChampions({
         </ol>
       ) : topAds.length > 0 ? (
         <section aria-label="Anúncios campeões" className="space-y-3">
-          <h3 className="etiqueta text-texto-apagado">Anúncios campeões</h3>
-          {/* Horizontal scroll is allowed only inside carousels. */}
-          <ol className="-mx-4 flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-1 lg:mx-0 lg:px-0">
+          <h2 className="etiqueta text-texto-apagado">Anúncios campeões</h2>
+          {/* Horizontal scroll is allowed only inside carousels. Focusable for keyboard scroll. */}
+          <ol
+            tabIndex={0}
+            className="-mx-4 flex snap-x snap-mandatory [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-1 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-dourado lg:mx-0 lg:px-0"
+          >
             {topAds.map((ad, i) => (
               <li
                 key={ad.id}
@@ -132,9 +135,9 @@ export function AdsChampions({
       ) : null}
 
       <section aria-label="Ranking de campanhas" className="space-y-3">
-        <h3 className="etiqueta text-texto-apagado">
+        <h2 className="etiqueta text-texto-apagado">
           Campanhas · menor custo por {names.singular}
-        </h3>
+        </h2>
         {ranked.length === 0 ? (
           <p className="text-[13px] text-texto-inativo">
             Nenhuma campanha com {names.pluralNoun} no período.

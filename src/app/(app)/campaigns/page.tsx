@@ -80,7 +80,7 @@ async function Campaigns({ searchParams }: Pick<PageProps<"/campaigns">, "search
 
 function CampaignsSkeleton() {
   return (
-    <div className="space-y-6" aria-busy aria-label="Carregando campanhas">
+    <div className="space-y-6" role="status" aria-busy aria-label="Carregando campanhas">
       <div className="space-y-2">
         <Skeleton className="h-7 w-40" />
         <Skeleton className="h-4 w-64" />

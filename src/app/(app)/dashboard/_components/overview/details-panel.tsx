@@ -33,7 +33,7 @@ interface DetailsPanelProps {
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h3 className="etiqueta text-texto-apagado">{title}</h3>
+      <h2 className="etiqueta text-texto-apagado">{title}</h2>
       {children}
     </section>
   );
