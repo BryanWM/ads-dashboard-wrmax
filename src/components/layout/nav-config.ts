@@ -1,6 +1,7 @@
 import {
   Building2Icon,
   CreditCardIcon,
+  FileTextIcon,
   LayoutDashboardIcon,
   MegaphoneIcon,
   PlugIcon,
@@ -18,11 +19,20 @@ export interface NavItem {
   keep: "period" | "client";
   /** Match only the exact path (for section roots like /admin). */
   exact?: boolean;
+  /** Shown to the agency only (the page checks the role again on the server). */
+  agencyOnly?: boolean;
 }
 
 export const CLIENT_NAV: NavItem[] = [
   { href: "/dashboard", label: "Visão geral", icon: LayoutDashboardIcon, keep: "period" },
   { href: "/campaigns", label: "Campanhas", icon: MegaphoneIcon, keep: "period" },
+  {
+    href: "/reports",
+    label: "Relatórios",
+    icon: FileTextIcon,
+    keep: "period",
+    agencyOnly: true,
+  },
 ];
 
 export const ADMIN_NAV: NavItem[] = [

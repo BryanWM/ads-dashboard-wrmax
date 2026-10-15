@@ -95,6 +95,22 @@ Nenhum e-mail é enviado pelo sistema: quem entrega o link é a agência.
 período, com busca por nome, filtro Ativas / Pausadas e ordenação por coluna. No celular
 vira uma lista de cartões.
 
+**Relatórios** (`/reports`, só agência; no celular fica em **Mais**): monta o resumo em texto
+para mandar ao cliente pelo WhatsApp.
+
+1. Escolha o **modelo**: **Rápido** (totais e comparação, para todo dia — é o padrão),
+   **Campanhas** (resultado de cada campanha) ou **Completo** (mais alcance, cliques,
+   funil e anúncio campeão — fechamento da semana ou do mês).
+2. Escolha o **período**: Ontem (padrão), 7 dias, Este mês, Mês anterior, **Um dia** (ex.:
+   "resumo de quarta") ou o calendário para outro intervalo. Um dia é comparado com o
+   **mesmo dia da semana anterior**; os outros períodos, com o período anterior.
+3. Confira a **prévia** e toque em **Copiar texto** (cole no WhatsApp) ou **Enviar pelo
+   WhatsApp** (abre o WhatsApp com o texto pronto para escolher o contato).
+
+Os números são os mesmos do painel: custo e ROAS consideram só as campanhas do resultado
+principal, e outros objetivos (como conversas) aparecem separados. Dados simulados saem com
+o aviso no texto.
+
 **Trocar de cliente** (só agência): seletor no topo do menu lateral. O cliente não vê
 seletor — só o nome do próprio negócio. O cliente e o
 período escolhidos acompanham a navegação entre as telas.

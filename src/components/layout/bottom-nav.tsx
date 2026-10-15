@@ -162,7 +162,8 @@ export function BottomNav({
         )}
       >
         <div className="mx-auto flex max-w-md items-stretch gap-1">
-          {CLIENT_NAV.map((item) => {
+          {/* Agency-only items (Relatórios) live in the "Mais" menu: four tabs max. */}
+          {CLIENT_NAV.filter((item) => !item.agencyOnly).map((item) => {
             const active = isActive(item, pathname);
             return (
               <Link

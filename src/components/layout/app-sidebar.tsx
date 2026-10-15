@@ -96,7 +96,10 @@ export function AppSidebar({ clients, viewer, showAdmin, demo }: AppSidebarProps
           <ClientSwitcher clients={clients} />
         </SidebarHeader>
         <SidebarContent>
-          <NavGroup label={viewer.isAgency ? "Cliente" : "Relatórios"} items={CLIENT_NAV} />
+          <NavGroup
+            label={viewer.isAgency ? "Cliente" : "Relatórios"}
+            items={CLIENT_NAV.filter((item) => viewer.isAgency || !item.agencyOnly)}
+          />
           {showAdmin ? <NavGroup label="Administração" items={ADMIN_NAV} /> : null}
         </SidebarContent>
         <SidebarFooter>

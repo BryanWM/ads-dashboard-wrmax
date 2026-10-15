@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isoToLocalDate, localDateToIso } from "@/lib/dates/local-date";
 import { MAX_RANGE_DAYS, PRESET_LABELS, withPeriod } from "@/lib/dates/period-params";
 import { pickDay, type PickStep } from "@/lib/dates/range-picking";
 import {
@@ -39,15 +40,8 @@ interface PeriodPickerProps {
 }
 
 // Calendar works with local Date objects; our ranges are calendar strings.
-function toDate(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y!, m! - 1, d!);
-}
-function toIso(date: Date) {
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${date.getFullYear()}-${m}-${d}`;
-}
+const toDate = isoToLocalDate;
+const toIso = localDateToIso;
 
 export function PeriodPicker({
   preset,
