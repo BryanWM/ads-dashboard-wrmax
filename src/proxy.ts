@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { SESSION_COOKIE_OPTIONS, supabasePublicConfig } from "@/lib/supabase/config";
 
-const PROTECTED = ["/dashboard", "/campaigns", "/admin", "/mfa"];
+const PROTECTED = ["/dashboard", "/campaigns", "/admin"];
 
 /**
  * Refreshes the Supabase session cookie and does OPTIMISTIC redirects only:

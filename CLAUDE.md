@@ -48,9 +48,9 @@ estruturais. Decisões em `docs/adr/README.md` — registre novas decisões lá.
 - **Segurança**: código em `src/server/**` começa com `import "server-only"`. Tokens e
   segredos nunca no cliente, em logs, em chaves de cache ou no repositório. Toda Server
   Action reverifica sessão, papel e posse do recurso, e valida a entrada com Zod.
-  Admin só vale com MFA (`aal2`, ADR-016 — inclusive no banco: `app.admin_org_ids()`).
-  Eventos de segurança via `securityEvent()` (nunca e-mail/token/link no log). Guia e
-  checklist manual: `docs/seguranca.md`.
+  Eventos de segurança via `securityEvent()` (nunca e-mail/token/link no log). MFA de
+  admin adiado a pedido (ADR-016, risco aceito). Guia e checklist manual:
+  `docs/seguranca.md`.
 - **Isolamento**: leituras usam o client Supabase com o JWT do usuário (RLS). A service
   role só em `src/server/sync` e ações admin auditadas.
 - **Métricas**: use `src/lib/metrics`. Nunca some/faça média de taxas; ausente é `null`,

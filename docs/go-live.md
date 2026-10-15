@@ -18,9 +18,8 @@ novo na conta da empresa. Nada de produção deve passar pelo computador de dese
 1. Criar o projeto Supabase da empresa. No SQL Editor, rodar todas as migrações de
    `supabase/migrations` em ordem e depois `supabase/tests/rls_isolation.sql`, que deve
    terminar com "OK".
-2. Criar o usuário administrador (Authentication → Add user, Auto Confirm). Antes de
-   rodar as migrações, confirmar **Authentication → Multi-Factor → TOTP ligado** (ADR-016:
-   sem ele o admin fica sem acesso). Em **Authentication → Sign In / Providers**: desligar
+2. Criar o usuário administrador (Authentication → Add user, Auto Confirm), com senha de
+   15+ caracteres. Em **Authentication → Sign In / Providers**: desligar
    **Allow new users to sign up** e **Anonymous sign-ins** e definir **senha mínima de 15
    caracteres** (igual à regra do app). Checklist completo: `docs/seguranca.md` (parte B).
 3. Rodar `pnpm db:seed --admin-email <e-mail> --no-demo` com as variáveis da empresa **só
@@ -51,7 +50,7 @@ novo na conta da empresa. Nada de produção deve passar pelo computador de dese
    **Limite de tentativas de login** (Fase 8, M1): o login roda no servidor, então o limite
    do Supabase enxerga o IP da Vercel, não o de quem tenta. Em Vercel → Firewall → Rules,
    criar uma regra **Rate limit**: requisições `POST` com caminho `/login` ou `/acesso`,
-   **10 por minuto por IP**, ação _Deny_ (429); incluir também `/mfa`. Variáveis secretas
+   **10 por minuto por IP**, ação _Deny_ (429). Variáveis secretas
    **só em Production** (nunca em Preview). Confirmar no painel se o plano da conta
    inclui regras de rate limit; se não incluir, registrar o risco e reavaliar no plano Pro.
 

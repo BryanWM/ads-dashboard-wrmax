@@ -9,9 +9,6 @@ export type SecurityEventType =
   | "login.failed"
   | "login.rate_limited"
   | "login.succeeded"
-  | "mfa.enrolled"
-  | "mfa.failed"
-  | "mfa.verified"
   | "access.password_set"
   | "access.link_rejected"
   | "cron.unauthorized";

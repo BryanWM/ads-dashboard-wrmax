@@ -158,20 +158,19 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   XSS continua sendo o React (sem `dangerouslySetInnerHTML` com dado de usuário). Uma
   integração que precise de outro domínio no navegador exige atualizar a CSP.
 
-## ADR-016 — Segundo fator obrigatório para a agência (aal2 no banco)
+## ADR-016 — Segundo fator (MFA) para a agência: adiado, risco aceito
 
 - **Contexto**: o papel `admin` lê todos os clientes, gera links de acesso e opera a
   conexão Meta. Só com senha, um ataque de tentativa em massa ou senha vazada entrega tudo
-  (revisão de segurança, risco nº 1).
-- **Decisão**: TOTP (aplicativo autenticador, Supabase Auth MFA) obrigatório para admin.
-  O banco é a trava: `app.admin_org_ids()` só devolve a organização quando o JWT tem
-  `aal = 'aal2'` — sem o segundo fator o admin não lê nem grava nada, nem chamando a API
-  do Supabase direto. O próprio vínculo continua legível para o app saber o papel e mandar
-  a pessoa para `/mfa` (cadastro do aplicativo na primeira vez, código nas seguintes).
-  Usuários de cliente seguem só com senha (mínimo de 15 caracteres, NIST 800-63B rev. 4).
-- **Consequências**: a migração `20261016120000_admin_requires_mfa.sql` precisa do MFA TOTP
-  ligado no projeto Supabase. Perda do celular: remover o fator do usuário no painel do
-  Supabase (procedimento em `docs/seguranca.md`); com dois admins, um cobre o outro.
+  (revisão de segurança, risco nº 1). Foi implementado TOTP obrigatório (aal2 exigido no
+  banco e tela `/mfa`) e **retirado em 16/10/2026 a pedido do usuário**, para manter o
+  acesso simples no início.
+- **Decisão**: sem MFA por enquanto. Compensações: senha nova com 15+ caracteres
+  (NIST 800-63B rev. 4), cadastro público desligado, limite de tentativas no Firewall da
+  Vercel e alertas de `login.failed` (`docs/seguranca.md`).
+- **Consequências**: risco aceito e registrado. Reavaliar antes de crescer o número de
+  admins ou de clientes; a implementação de referência está no commit `3cd7b45`
+  (migração que exige `aal2` em `app.admin_org_ids()` + tela `/mfa`).
 
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 

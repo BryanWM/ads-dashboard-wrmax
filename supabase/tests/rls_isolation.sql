@@ -6,7 +6,7 @@
 -- Sucesso = termina sem erro. Falha = erro "FALHOU: …" dizendo o que vazou.
 --
 -- Cenário: agência A (clientes X e Y, uma conta sem cliente) e agência B (cliente Z).
--- Pessoas: admin da A, usuário do cliente X, admin da B, admin da A sem MFA, anônimo.
+-- Pessoas: admin da A, usuário do cliente X, admin da B, visitante anônimo.
 -- =============================================================================
 begin;
 
@@ -178,7 +178,7 @@ reset role;
 -- ---------------------------------------------------------------- admin da agência A
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated","aal":"aal2"}', true);
+  '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated"}', true);
 
 do $$
 declare n bigint;
@@ -265,7 +265,7 @@ reset role;
 -- ---------------------------------------------------------------- admin da agência B
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated","aal":"aal2"}', true);
+  '{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated"}', true);
 
 do $$
 declare n bigint;
@@ -281,37 +281,6 @@ begin
 
   select count(*) into n from public.profiles;
   if n <> 1 then raise exception 'FALHOU: admin B vê % perfis (esperado 1)', n; end if;
-end $$;
-
-reset role;
-
--- ---------------------------------------------------------------- admin A só com senha (aal1)
--- ADR-016: sem o segundo fator o papel admin não vale; só o próprio vínculo é visível.
-set local role authenticated;
-select set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated","aal":"aal1"}', true);
-
-do $$
-declare n bigint;
-begin
-  select count(*) into n from public.clients;
-  if n <> 0 then raise exception 'FALHOU: admin sem MFA vê % clientes (esperado 0)', n; end if;
-
-  select count(*) into n from public.campaign_metrics_daily;
-  if n <> 0 then raise exception 'FALHOU: admin sem MFA vê % linhas de métrica', n; end if;
-
-  select count(*) into n from public.platform_connections;
-  if n <> 0 then raise exception 'FALHOU: admin sem MFA vê % conexões', n; end if;
-
-  select count(*) into n from public.memberships;
-  if n <> 1 then raise exception 'FALHOU: admin sem MFA vê % vínculos (esperado só o próprio)', n; end if;
-
-  begin
-    insert into public.audit_logs (organization_id, actor_user_id, action, target_type)
-    values ('00000000-0000-4000-8000-00000000000a', '00000000-0000-4000-8000-0000000000a1', 'x', 'x');
-    raise exception 'FALHOU: admin sem MFA gravou auditoria';
-  exception when insufficient_privilege then null;
-  end;
 end $$;
 
 reset role;
