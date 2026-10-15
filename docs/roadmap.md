@@ -23,9 +23,12 @@
 
 ## Fases
 
-Situação (13/10/2026): Fases 1–5 concluídas. Fase 5 validada pelo usuário no Supabase:
+Situação (15/10/2026): Fases 1–6 concluídas. Fase 5 validada pelo usuário no Supabase:
 teste de isolamento OK, login real, cadastro de clientes, associação de contas e login de
-cliente por link de uso único. Próxima: Fase 6.
+cliente por link de uso único. Fase 6: conta real conectada por token de usuário do
+sistema, dados importados e conferidos com o Gerenciador de Anúncios (investimento,
+resultados por tipo). Próxima: Fase 7 — inclui ligar `sync_enabled` ao associar a conta
+a um cliente (hoje só o "Buscar dados" manual sincroniza contas reais).
 
 | Fase                 | Entregas                                                                                                | Critério de pronto                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |

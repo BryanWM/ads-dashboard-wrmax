@@ -1,8 +1,9 @@
 # Integração Meta Ads (Marketing API)
 
-Levantamento da Fase 1 (outubro de 2026). **Nada aqui está validado contra uma conta
-real ainda** — a integração só será considerada concluída na Fase 6, após uma consulta
-autorizada cujos números batam com o Gerenciador de Anúncios.
+Levantamento da Fase 1 (outubro de 2026), atualizado na Fase 6. **Conferido com uma conta
+real em 15/10/2026**: investimento total, resultados por tipo (compras e conversas por
+mensagem) e campanha de reconhecimento sem resultado bateram com o Gerenciador de Anúncios
+(período de 7 dias, 10 campanhas).
 
 ## Versão da API
 
@@ -51,7 +52,8 @@ primeira variante presente, nunca a soma. O evento vem do objetivo da campanha
 (Vendas → compra, ou conversa se for o que a campanha gerou; Cadastros → cadastro ou
 conversa; Engajamento → conversa; Tráfego → clique no link; Reconhecimento → sem
 resultado). Com evento definido, ausência no dia = 0; sem evento, `null`.
-**A conferir com o Gerenciador de Anúncios** na primeira conta real.
+**Conferido com o Gerenciador de Anúncios** em 15/10/2026 (Vendas → compra, Vendas →
+conversa e Reconhecimento → sem resultado, como no Gerenciador).
 
 ## Consulta de métricas
 

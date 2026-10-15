@@ -5,8 +5,8 @@
  * action type, and repeats the same event under several names (e.g. `purchase`,
  * `omni_purchase`, `offsite_conversion.fb_pixel_purchase` carry the SAME value).
  * We therefore pick ONE type per event — never sum the variants — and choose the
- * event from the campaign objective. To be confirmed against Ads Manager in the
- * Phase 6 check (docs/meta-integration.md).
+ * event from the campaign objective. Checked against Ads Manager on 2026-10-15
+ * (docs/meta-integration.md).
  */
 
 export interface ActionStat {

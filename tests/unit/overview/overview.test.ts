@@ -115,8 +115,10 @@ describe("summary sentence", () => {
         }),
       ),
     );
-    expect(text).toContain("R$ 1.240 investidos em campanhas de compras geraram 86 compras");
-    expect(text).not.toContain("Isso é");
+    // Opens with the total (same as the Investimento card), then the main result's share.
+    expect(text).toBe(
+      "Nos últimos 7 dias, foram investidos R$ 2.000. Desse valor, R$ 1.240 foram em campanhas de compras, que geraram 86 compras, a R$ 14,42 cada.",
+    );
   });
 
   it("does not invent results when there are none", () => {

@@ -48,6 +48,8 @@ function money(value: number, currency: string, cents: boolean) {
 /**
  * "Nos últimos 7 dias, R$ 1.240 investidos geraram 86 compras, a R$ 14,42 cada.
  *  Isso é 8% mais barato que nos 7 dias anteriores."
+ * With other objectives in the period: "…, foram investidos R$ 2.000. Desse valor,
+ *  R$ 1.240 foram em campanhas de compras, que geraram 86 compras, a R$ 14,42 cada."
  * Built from a template with the existing numbers only — no AI, no invented data.
  */
 export function buildSummary(input: SummaryInput): SummaryPart[] {
@@ -82,16 +84,23 @@ export function buildSummary(input: SummaryInput): SummaryPart[] {
 
   const count = formatMetricValue(current.results, "integer");
   const noun = current.results === 1 ? names.singular : names.pluralNoun;
-  const parts: SummaryPart[] = [
-    { text: `${intro}, ` },
-    { text: money(spend, currency, false), strong: true },
-    {
-      text: current.hasOtherTypes
-        ? ` investidos em campanhas de ${names.pluralNoun} geraram `
-        : " investidos geraram ",
-    },
-    { text: `${count} ${noun}`, strong: true },
-  ];
+  // Mixed objectives: open with the total (the same number as the Investimento card),
+  // then the share that produced the main result.
+  const parts: SummaryPart[] = current.hasOtherTypes
+    ? [
+        { text: `${intro}, foram investidos ` },
+        { text: money(input.totalSpend, currency, false), strong: true },
+        { text: ". Desse valor, " },
+        { text: money(spend, currency, false), strong: true },
+        { text: ` foram em campanhas de ${names.pluralNoun}, que geraram ` },
+        { text: `${count} ${noun}`, strong: true },
+      ]
+    : [
+        { text: `${intro}, ` },
+        { text: money(spend, currency, false), strong: true },
+        { text: " investidos geraram " },
+        { text: `${count} ${noun}`, strong: true },
+      ];
   if (current.costPerResult !== null) {
     parts.push(
       { text: ", a " },
