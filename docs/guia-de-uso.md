@@ -74,8 +74,9 @@ Nenhum e-mail é enviado pelo sistema: quem entrega o link é a agência.
 **Visão geral** (`/dashboard`) — já funciona:
 
 1. Escolha o período nos chips **7 dias · 30 dias · Mês atual** ou toque no
-   **calendário** ao lado deles para outro período (até 366 dias). O período escolhido vale
-   também para Campanhas.
+   **calendário** ao lado deles para outro período (até 366 dias): o **1º toque marca a
+   data final** e o **2º toque, a data inicial**; depois, **Aplicar**. O período escolhido
+   vale também para Campanhas.
 2. Leia a **frase-resumo**: quanto investiu, quantos resultados, quanto custou cada um e
    se ficou mais caro ou mais barato que o período anterior.
 3. Olhe os **4 números**: Investimento, Resultado principal, Custo por resultado e

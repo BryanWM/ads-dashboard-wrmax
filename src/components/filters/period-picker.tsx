@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Switch } from "@/components/ui/switch";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MAX_RANGE_DAYS, PRESET_LABELS, withPeriod } from "@/lib/dates/period-params";
+import { pickDay, type PickStep } from "@/lib/dates/range-picking";
 import {
   PERIOD_PRESETS,
   rangeLength,
@@ -64,6 +65,14 @@ export function PeriodPicker({
     from: toDate(range.from),
     to: toDate(range.to),
   });
+  // 1st tap = end date, 2nd tap = start date (src/lib/dates/range-picking.ts).
+  const [step, setStep] = useState<PickStep>("end");
+
+  function pick(day: Date) {
+    const { range: next, next: nextStep } = pickDay(draft, day, step);
+    setDraft(next);
+    setStep(nextStep);
+  }
 
   const draftRange =
     draft?.from && draft.to ? { from: toIso(draft.from), to: toIso(draft.to) } : null;
@@ -81,7 +90,10 @@ export function PeriodPicker({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) setDraft({ from: toDate(range.from), to: toDate(range.to) });
+        if (next) {
+          setDraft({ from: toDate(range.from), to: toDate(range.to) });
+          setStep("end");
+        }
       }}
     >
       {variant === "chip" ? (
@@ -136,19 +148,25 @@ export function PeriodPicker({
               locale={ptBR}
               numberOfMonths={isMobile ? 1 : 2}
               selected={draft}
-              onSelect={setDraft}
+              // DayPicker's own range logic is replaced by ours; the tapped day is enough.
+              onSelect={(_range, day) => pick(day)}
               defaultMonth={draft?.from}
               disabled={{ after: toDate(today) }}
               className="bg-transparent"
             />
             <div className="flex items-center justify-between gap-3 border-t px-3 py-2">
-              <p className="text-xs text-muted-foreground">
-                {draftTooLong
-                  ? `Máximo de ${MAX_RANGE_DAYS} dias`
-                  : draftRange
-                    ? formatDateRange(draftRange)
-                    : "Selecione início e fim"}
-              </p>
+              <div className="space-y-0.5 text-xs" aria-live="polite">
+                <p className="text-texto figures-tabular">
+                  {draftTooLong
+                    ? `Máximo de ${MAX_RANGE_DAYS} dias`
+                    : draftRange
+                      ? formatDateRange(draftRange)
+                      : "Selecione o período"}
+                </p>
+                <p className="text-muted-foreground">
+                  {step === "end" ? "Toque na data final" : "Agora toque na data inicial"}
+                </p>
+              </div>
               <Button
                 size="sm"
                 disabled={!draftRange || draftTooLong}
