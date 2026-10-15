@@ -18,6 +18,7 @@ import { isDemoMode } from "@/server/auth/session";
 import { loadAdminOverview } from "@/server/data/admin";
 
 import { AccountClientSelect } from "../_components/account-client-select";
+import { AccountSyncSwitch } from "../_components/account-sync-switch";
 import {
   AdminAccessDenied,
   AdminSkeleton,
@@ -49,7 +50,7 @@ async function AdAccounts() {
       <PageHeader
         eyebrow="Administração"
         title="Contas de anúncio"
-        description="Contas disponíveis pela conexão Meta e o cliente de cada uma. Ao trocar o cliente, o histórico da conta vai junto."
+        description="Contas disponíveis pela conexão Meta e o cliente de cada uma. Ao trocar o cliente, o histórico da conta vai junto. Contas com atualização diária recebem os dados de ontem toda manhã."
       />
       {editable ? null : <DemoReadOnlyNotice />}
       <AdminTableCard title={`${data.adAccounts.length} contas`}>
@@ -59,7 +60,7 @@ async function AdAccounts() {
               <TableHead className="pl-5">Conta</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Moeda · fuso</TableHead>
-              <TableHead>Sincronização</TableHead>
+              <TableHead>Atualização</TableHead>
               <TableHead>Situação</TableHead>
               <TableHead>Última atualização</TableHead>
               {editable ? <TableHead className="pr-5" aria-label="Ações" /> : null}
@@ -88,10 +89,19 @@ async function AdAccounts() {
                   {a.currency} · {a.timezone}
                 </TableCell>
                 <TableCell>
-                  <span className="inline-flex items-center gap-2 text-[13px] text-texto">
-                    <StatusDot tone={a.syncEnabled ? "ok" : "neutro"} />
-                    {a.syncEnabled ? "Ativa" : "Desativada"}
-                  </span>
+                  {editable ? (
+                    <AccountSyncSwitch
+                      accountId={a.id}
+                      accountName={a.name}
+                      enabled={a.syncEnabled}
+                      hasClient={a.clientId !== null}
+                    />
+                  ) : (
+                    <span className="inline-flex items-center gap-2 text-[13px] text-texto">
+                      <StatusDot tone={a.syncEnabled ? "ok" : "neutro"} />
+                      {a.syncEnabled ? "Diária" : "Desligada"}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <HealthBadge health={a.health} />

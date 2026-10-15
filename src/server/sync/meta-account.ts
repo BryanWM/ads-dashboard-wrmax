@@ -8,6 +8,7 @@ import { parseInsightRows, toMetricColumns, type InsightRow } from "@/lib/meta/i
 import { chooseResultEvent, type ResultEvent } from "@/lib/meta/results";
 import { SLOW_DOWN_ABOVE_PERCENT, type MetaUsage } from "@/lib/meta/usage";
 import { reachRanges, splitRange, syncWindow } from "@/lib/meta/sync-window";
+import { MAX_ATTEMPTS, retryDelayMinutes } from "@/lib/sync/schedule";
 import { readConnectionToken } from "@/server/crypto/tokens";
 import { accountReach, dailyInsights, getAds, listCampaigns } from "@/server/integrations/meta/api";
 import { graphVersion, MetaApiError } from "@/server/integrations/meta/client";
@@ -129,6 +130,7 @@ export async function syncMetaAccount(
     "read sync state",
   ) as { data_through_date: string | null; consecutive_failures: number } | null;
   const window = syncWindow(today, state?.data_through_date ?? null);
+  const attempt = (state?.consecutive_failures ?? 0) + 1;
 
   const job = must(
     await db
@@ -140,7 +142,8 @@ export async function syncMetaAccount(
         window_start: window.from,
         window_end: window.to,
         status: "running",
-        attempt: 1,
+        attempt,
+        max_attempts: MAX_ATTEMPTS,
         started_at: startedAt,
       })
       .select("id")
@@ -365,14 +368,16 @@ export async function syncMetaAccount(
       : "Falha interna na sincronização. Veja o registro.";
     const finishedAt = new Date().toISOString();
 
+    // Retryable errors are retried by the scheduler (backoff) until MAX_ATTEMPTS → dead.
+    const retryable = kind !== null && isRetryable(kind);
     await db
       .from("sync_jobs")
       .update({
-        status: kind && isRetryable(kind) ? "retry_scheduled" : "failed",
+        status: retryable ? (attempt >= MAX_ATTEMPTS ? "dead" : "retry_scheduled") : "failed",
         error_code: meta?.code !== null && meta?.code !== undefined ? String(meta.code) : kind,
         error_message: meta ? meta.message : friendly,
         next_attempt_at: new Date(
-          Date.now() + Math.max(meta?.usage?.waitMinutes ?? 0, 15) * 60_000,
+          Date.now() + retryDelayMinutes(attempt, meta?.usage?.waitMinutes) * 60_000,
         ).toISOString(),
         finished_at: finishedAt,
       })
@@ -384,7 +389,7 @@ export async function syncMetaAccount(
         last_attempt_at: finishedAt,
         last_error_code: kind ?? "internal",
         last_error_message: friendly,
-        consecutive_failures: (state?.consecutive_failures ?? 0) + 1,
+        consecutive_failures: attempt,
       },
       { onConflict: "ad_account_id" },
     );

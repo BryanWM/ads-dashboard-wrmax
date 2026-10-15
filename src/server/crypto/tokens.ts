@@ -36,6 +36,15 @@ export async function storeConnectionToken(connectionId: string, token: string):
   if (error) throw new Error(`Could not store credential: ${error.message}`);
 }
 
+/** Whether a token is stored for the connection (demo connections have none). Not decrypted. */
+export async function hasConnectionToken(connectionId: string): Promise<boolean> {
+  const { data, error } = await createServiceSupabase()
+    .rpc("read_platform_credential", { p_connection_id: connectionId })
+    .maybeSingle();
+  if (error) throw new Error(`Could not read credential: ${error.message}`);
+  return data !== null;
+}
+
 export async function readConnectionToken(connectionId: string): Promise<string> {
   const { data, error } = await createServiceSupabase()
     .rpc("read_platform_credential", { p_connection_id: connectionId })

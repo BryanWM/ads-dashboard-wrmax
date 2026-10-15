@@ -94,9 +94,10 @@ export async function assignAdAccount(input: {
     const { accountId, clientId } = parsed.data;
     const client = clientId ? await clientInOrg(ctx, clientId) : null;
 
+    // An account with a client enters the daily sync; without one it leaves it.
     const { data, error } = await ctx.db
       .from("ad_accounts")
-      .update({ client_id: clientId })
+      .update({ client_id: clientId, sync_enabled: clientId !== null })
       .eq("id", accountId)
       .eq("organization_id", ctx.organizationId)
       .select("name")
@@ -109,6 +110,49 @@ export async function assignAdAccount(input: {
       targetType: "ad_account",
       targetId: accountId,
       label: client ? `${data.name} → ${client.name}` : data.name,
+    });
+    refresh();
+    return { ok: true };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+const syncToggleSchema = z.object({ accountId: z.uuid(), enabled: z.boolean() });
+
+/** Turns the account's daily sync on/off ("Buscar dados" keeps working either way). */
+export async function setAccountSync(input: {
+  accountId: string;
+  enabled: boolean;
+}): Promise<FormState> {
+  const parsed = syncToggleSchema.safeParse(input);
+  if (!parsed.success) return { formError: "Seleção inválida." };
+  try {
+    const ctx = await requireAdmin();
+    const { accountId, enabled } = parsed.data;
+    const { data: account } = await ctx.db
+      .from("ad_accounts")
+      .select("name, client_id")
+      .eq("id", accountId)
+      .eq("organization_id", ctx.organizationId)
+      .maybeSingle();
+    if (!account) throw new AdminActionError("Conta não encontrada.");
+    if (enabled && !account.client_id) {
+      throw new AdminActionError("Associe a conta a um cliente antes de ligar a atualização.");
+    }
+
+    const { error } = await ctx.db
+      .from("ad_accounts")
+      .update({ sync_enabled: enabled })
+      .eq("id", accountId)
+      .eq("organization_id", ctx.organizationId);
+    if (error) throw new Error(error.message);
+
+    await audit(ctx, {
+      action: enabled ? "Atualização diária ligada" : "Atualização diária desligada",
+      targetType: "ad_account",
+      targetId: accountId,
+      label: account.name,
     });
     refresh();
     return { ok: true };

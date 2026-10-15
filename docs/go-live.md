@@ -33,6 +33,10 @@ novo na conta da empresa. Nada de produção deve passar pelo computador de dese
    | `META_APP_SECRET`                      | Secret |
    | `META_APP_ID`                          | Config |
    | `META_GRAPH_API_VERSION` (`v25.0`)     | Config |
+   | `CRON_SECRET` (nova, ≥ 16 caracteres)  | Secret |
+
+   Sem `CRON_SECRET` o agendador diário (`vercel.json`) recebe 401 e nada é atualizado
+   sozinho. Gere com `openssl rand -hex 24`.
 
    Guardar `TOKEN_ENCRYPTION_KEY` e `SUPABASE_SECRET_KEY` também no gerenciador de senhas
    da empresa.

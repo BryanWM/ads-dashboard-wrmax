@@ -8,8 +8,9 @@ const ACCOUNT_COLUMNS =
   "id, organization_id, connection_id, external_id, name, currency, timezone_name";
 
 /**
- * One sync run for one organisation (manual now; the Phase 7 scheduler reuses it).
+ * One sync run for one organisation ("Buscar dados" and the daily scheduler).
  * Accounts run one after another: low concurrency is kinder to Meta's limits.
+ * Past `deadline` (epoch ms) no new account starts; the rest stay due for the next call.
  */
 export async function runSync(
   db: SupabaseClient,
@@ -17,9 +18,11 @@ export async function runSync(
   accountIds: string[],
   trigger: "manual" | "cron" | "retry",
   requestedBy: string | null,
+  deadline = Number.POSITIVE_INFINITY,
 ): Promise<{
   runId: string;
   results: (AccountSyncResult & { accountId: string; name: string })[];
+  deferred: number;
 }> {
   const { data: accounts, error } = await db
     .from("ad_accounts")
@@ -41,11 +44,15 @@ export async function runSync(
     .single();
   if (runError || !run) throw new Error(`create run: ${runError?.message}`);
 
+  const queue = (accounts ?? []) as SyncAccount[];
   const results = [];
-  for (const account of (accounts ?? []) as SyncAccount[]) {
+  for (const account of queue) {
+    // The first account always runs, so a run is never empty.
+    if (results.length > 0 && Date.now() > deadline) break;
     const result = await syncMetaAccount(db, account, run.id);
     results.push({ ...result, accountId: account.id, name: account.name });
   }
+  const deferred = queue.length - results.length;
 
   const failed = results.filter((r) => !r.ok);
   await db
@@ -58,6 +65,7 @@ export async function runSync(
         accounts_total: results.length,
         accounts_failed: failed.length,
         rows_upserted: results.reduce((n, r) => n + r.rows, 0),
+        accounts_deferred: deferred || undefined,
         failure_summary: failed.length
           ? failed
               .map((r) => `${r.name}: ${r.error}`)
@@ -68,5 +76,5 @@ export async function runSync(
     })
     .eq("id", run.id);
 
-  return { runId: run.id, results };
+  return { runId: run.id, results, deferred };
 }

@@ -54,8 +54,15 @@ Nenhum e-mail é enviado pelo sistema: quem entrega o link é a agência.
 
 ### 4–5. Atualização automática
 
-- Todo dia às **06:10** (horário de Brasília) o sistema busca na Meta os últimos 28 dias
-  (a Meta corrige números de dias anteriores) — **Fase 7**.
+- Todo dia **entre 6h e 7h** (horário de Brasília) o sistema busca na Meta os últimos 28
+  dias (a Meta corrige números de dias anteriores), para cada conta com **Atualização:
+  Diária** em Administração → Contas de anúncio. Ao associar uma conta a um cliente, a
+  atualização diária liga sozinha; o interruptor permite pausar. **Buscar dados** continua
+  funcionando a qualquer hora.
+- Uma conta já atualizada no dia não é buscada de novo. Em falha temporária (limite da
+  Meta, instabilidade), o sistema tenta de novo nas execuções seguintes, esperando cada vez
+  mais; após **5 falhas seguidas** ele para de tentar sozinho até um "Buscar dados" dar
+  certo. Chave da Meta inválida marca a conexão para reconectar.
 - Se uma conta falhar, os dados anteriores são mantidos, o cliente vê "Atualizado em…"
   com a data real, e a falha aparece para a agência em:
   - **Administração → Integrações** ("Contas que precisam de atenção");

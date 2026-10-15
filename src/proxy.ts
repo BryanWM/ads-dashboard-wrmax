@@ -49,7 +49,8 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except static assets and the sign-out route (it clears cookies itself).
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg|brand/|demo/|auth/sign-out).*)",
+    // Everything except static assets, the sign-out route (it clears cookies itself) and
+    // the cron route (no session; it checks CRON_SECRET).
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|brand/|demo/|auth/sign-out|api/cron/).*)",
   ],
 };

@@ -118,7 +118,8 @@ flowchart LR
   máxima limitada. Por isso o motor de sync usa **fila em tabela + orçamento de tempo**:
   se uma execução não termina todas as contas, os jobs pendentes continuam na próxima
   chamada (manual ou agendada). No plano Pro, adiciona-se um segundo cron de "drenagem"
-  a cada 15 min para retentativas — sem mudar código.
+  a cada 15 min para retentativas — sem mudar código. Implementação: ADR-014 (a "fila" é
+  o estado de cada conta; `src/lib/sync/schedule.ts` e `src/server/sync/scheduler.ts`).
 - **Meta, acesso limitado (dev)**: limites de requisição baixos; suficiente para
   desenvolvimento com as contas da própria agência. Para atender contas de **outras
   empresas** é preciso _Advanced Access_ em `ads_read` (App Review) e _Full access_ no

@@ -27,8 +27,9 @@ Situação (15/10/2026): Fases 1–6 concluídas. Fase 5 validada pelo usuário 
 teste de isolamento OK, login real, cadastro de clientes, associação de contas e login de
 cliente por link de uso único. Fase 6: conta real conectada por token de usuário do
 sistema, dados importados e conferidos com o Gerenciador de Anúncios (investimento,
-resultados por tipo). Próxima: Fase 7 — inclui ligar `sync_enabled` ao associar a conta
-a um cliente (hoje só o "Buscar dados" manual sincroniza contas reais).
+resultados por tipo). Fase 7 implementada (ADR-014): cron diário em `/api/cron/sync`,
+interruptor de atualização diária por conta, backoff e desistência; testada localmente
+(401 sem chave; segunda chamada não repete). Falta validar na Vercel com `CRON_SECRET`.
 
 | Fase                 | Entregas                                                                                                | Critério de pronto                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |

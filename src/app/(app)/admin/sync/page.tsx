@@ -61,7 +61,7 @@ async function SyncRuns() {
       <PageHeader
         eyebrow="Administração"
         title="Sincronizações"
-        description="Execuções diárias do agendador (06:10, horário de Brasília) e retentativas."
+        description="Execução diária do agendador (entre 6h e 7h, horário de Brasília) e buscas manuais."
       />
       {isDemoMode() ? <DemoReadOnlyNotice /> : null}
       <AdminTableCard title="Histórico recente">

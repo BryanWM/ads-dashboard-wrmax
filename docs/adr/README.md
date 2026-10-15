@@ -125,6 +125,24 @@ próximo número; decisões substituídas são marcadas, não apagadas.
   em componentes). Pendências: logo escuro oficial; validar `--chart-2…8` no claro antes
   de usar gráficos com 3+ séries.
 
+## ADR-014 — Agendador diário sem fila separada
+
+- **Contexto**: Vercel Hobby permite um cron por dia (horário ±59 min) e funções de até
+  300 s. O desenho original previa uma fila de jobs drenada por um segundo cron.
+- **Decisão**: `GET /api/cron/sync` (protegido por `CRON_SECRET`, comparação em tempo
+  constante) roda uma vez por dia (`vercel.json`, 09:00 UTC). A "fila" é o próprio estado
+  da conta (`ad_account_sync_state`): uma conta está pendente até ter sucesso **na data de
+  hoje no fuso dela** — chamar de novo não refaz o que já foi feito, e contas que não
+  couberam no orçamento de tempo (200 s) ficam para a próxima chamada. Regras puras em
+  `src/lib/sync/schedule.ts`: interruptor `sync_enabled` (ligado ao associar a um
+  cliente), conexão ativa e com token, sem job em andamento, backoff exponencial
+  (15 min → 24 h) e desistência após 5 falhas seguidas (job `dead`). Jobs "running" há
+  mais de 15 min são fechados como falha (função encerrada por timeout).
+- **Consequências**: sem tabela nova nem migração. No Hobby, retentativas só acontecem no
+  dia seguinte (ou num "Buscar dados"); no Pro, basta adicionar mais horários ao cron, sem
+  mudar código. Com muitas contas, a primeira carga (90 dias) pode levar mais de um dia
+  para completar todas.
+
 ## ADR-006 — Alcance deduplicado por snapshots de períodos-padrão
 
 - **Contexto**: alcance não é aditivo entre dias.
